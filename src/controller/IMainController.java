@@ -8,7 +8,9 @@ public interface IMainController {
 
 	public void setModel(IRestaurant model, IMenu menu);
 
-	public void setControllers(RestaurantView view, IMainViewController viewCtrl, Class<DialogController> dialogCtrl);
+	public void setMainViewAndControllers(RestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl);
+	
+	public IDialogController getDialogController();
 
 	public IRestaurant getRestaurant();
 

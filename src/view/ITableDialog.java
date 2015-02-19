@@ -1,5 +1,7 @@
 package view;
 
+import controller.IDialogController;
+
 public interface ITableDialog {
 
 	public void addOrderToView(String name, double price, int amount,
@@ -12,5 +14,7 @@ public interface ITableDialog {
 	public void showError(Exception e);
 
 	public void clearErrors();
+	
+	public void setControllerAndBuildView(IDialogController dialogCtrl);
 
 }

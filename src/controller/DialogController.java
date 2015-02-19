@@ -22,11 +22,14 @@ public class DialogController implements IDialogController {
 	private IMenu menu;
 	private IRestaurant model;
 	
-	public DialogController(ITableDialog td, IMainController ctrl) {
-		this.tableDialog = td;
+	public DialogController(IMainController ctrl) {
+		this.ctrl = ctrl;
+		updateReferences();
+	}
+	
+	public void updateReferences() {
 		this.menu = ctrl.getMenu();
 		this.model = ctrl.getRestaurant();
-		this.ctrl = ctrl;
 	}
 	
 	/* (non-Javadoc)
@@ -152,6 +155,15 @@ public class DialogController implements IDialogController {
 	
 	private void commandErrorUpdate(Exception e) {
 		tableDialog.showError(e);
+	}
+
+	@Override
+	public void setView(ITableDialog td) {
+		if(td==null) {
+			throw new NullPointerException();
+		}
+		this.tableDialog = td;
+		td.setControllerAndBuildView(this);
 	}
 
 }

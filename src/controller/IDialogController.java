@@ -2,9 +2,14 @@ package controller;
 
 import javax.swing.JTable;
 
+import view.ITableDialog;
 import model.IDish;
 
 public interface IDialogController {
+	
+	public void setView(ITableDialog td);
+	
+	public void updateReferences();
 
 	public IDish[] getMenu();
 

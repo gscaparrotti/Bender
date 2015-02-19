@@ -31,13 +31,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JSpinner;
 
-import controller.DialogController;
 import controller.IDialogController;
 import controller.IMainController;
 import net.miginfocom.swing.MigLayout;
 
 import java.awt.BorderLayout;
-import java.lang.reflect.InvocationTargetException;
 
 public class TableDialog extends JDialog implements ITableDialog {
 	
@@ -60,17 +58,14 @@ public class TableDialog extends JDialog implements ITableDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public TableDialog(IMainController ctrl, Class<DialogController> dialogCtrl, int tableNumber) {
+	public TableDialog(IMainController ctrl, int tableNumber) {
 		super();
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.tableNumber = tableNumber;
-		try {
-			this.ctrl = dialogCtrl.getConstructor(new Class[] {ITableDialog.class, IMainController.class}).newInstance(this, ctrl);
-		} catch (InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			ctrl.showIrreversibleErrorOnMainView(e.getMessage());
-		}
+	}
+	
+	public void setControllerAndBuildView(IDialogController dialogCtrl) {
+		this.ctrl = dialogCtrl;
 		buildView();
 	}
 	
