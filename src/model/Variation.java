@@ -14,6 +14,7 @@ public class Variation implements IDish {
 		if(item == null) {
 			throw new NullPointerException();
 		}
+		this.decoratedDish = item;
 		this.variationName = variationName;
 		this.cost = cost;
 	}

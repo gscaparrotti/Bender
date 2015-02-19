@@ -11,7 +11,6 @@ public class Menu extends LinkedList<IDish> implements IMenu{
 	private static final long serialVersionUID = -1111129590390041868L;
 	
 	public Menu() {
-		testAdds();
 	}
 	
 	public void addItems(IDish... items) {
@@ -19,13 +18,8 @@ public class Menu extends LinkedList<IDish> implements IMenu{
 	}
 	
 	public Dish[] getDishesArray() {
+		this.sort((t1, t2) -> t1.getName().compareTo(t2.getName()));
 		return this.toArray(new Dish[this.size()]);
-	}
-	
-	private void testAdds() {
-		this.add(new Dish("Coca-Cola", 2.50));
-		this.add(new Dish("Piadina vuota", 3.00));
-		this.add(new Dish("Pizza margherita", 5.00));
 	}
 
 }
