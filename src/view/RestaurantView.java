@@ -23,7 +23,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import controller.IDialogController;
 import controller.IMainController;
 import controller.IMainViewController;
 import controller.MainController;
@@ -160,9 +159,8 @@ public class RestaurantView extends JFrame{
 		newButton.addActionListener(new ActionListener() {				
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				IDialogController dialogCtrl = ctrl.getDialogController();
 				TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText()));	
-				dialogCtrl.setView(tableDialog);
+				ctrl.getDialogController().setView(tableDialog);
 				tableDialog.setVisible(true);			
 			}
 		});
