@@ -26,6 +26,7 @@ public class MainController implements IMainController {
 	private IRestaurant model;
 	private IMenu menu;
 	private RestaurantView view;
+	private IDialogController dc;
 	
 	public MainController() {
 	}
@@ -38,9 +39,10 @@ public class MainController implements IMainController {
 	}
 	
 	@Override
-	public void setControllers(RestaurantView view, IMainViewController viewCtrl, Class<DialogController> dialogCtrl) {
+	public void setMainViewAndControllers(RestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl) {
+		this.dc = dialogCtrl;
 		this.view = view;
-		view.setControllers(this, viewCtrl, dialogCtrl);
+		view.setControllers(this, viewCtrl);
 	}
 	
 	@Override
@@ -77,6 +79,7 @@ public class MainController implements IMainController {
 			final ObjectInput ois = new ObjectInputStream(new FileInputStream(PATHS[0]));
 			this.model = (IRestaurant) ois.readObject();
 			ois.close();
+			dc.updateReferences();
 			return model.getTablesAmount();
 		} catch (Exception e) {
 			showMessageOnMainView(e.getMessage());
@@ -135,6 +138,11 @@ public class MainController implements IMainController {
 				throw new NullPointerException();
 			}
 		}
+	}
+
+	@Override
+	public IDialogController getDialogController() {
+		return this.dc;
 	}
 
 }

@@ -23,9 +23,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import controller.IDialogController;
 import controller.IMainController;
 import controller.IMainViewController;
-import controller.DialogController;
 import controller.MainController;
 import viewAccessories.ThumbnailIcon;
 
@@ -39,7 +39,6 @@ public class RestaurantView extends JFrame{
 	private JCheckBox autoSaveCheckBox = new JCheckBox("Auto-Salvataggio");
 	private IMainController ctrl;
 	private IMainViewController viewCtrl;
-	private Class<DialogController> dialogCtrlClass;
 	
 	public RestaurantView() {
 		super("Bender");
@@ -50,10 +49,9 @@ public class RestaurantView extends JFrame{
 		buildView();
 	}
 	
-	public void setControllers(final IMainController controller, final IMainViewController viewController, final Class<DialogController> dialogController) {
+	public void setControllers(final IMainController controller, final IMainViewController viewController) {
 		this.ctrl = controller;
 		this.viewCtrl = viewController;
-		this.dialogCtrlClass = dialogController;
 	}
 	
 	private void buildView() {
@@ -162,8 +160,10 @@ public class RestaurantView extends JFrame{
 		newButton.addActionListener(new ActionListener() {				
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				TableDialog t = new TableDialog(ctrl, dialogCtrlClass, Integer.parseInt(newButton.getText()));	
-				t.setVisible(true);			
+				IDialogController dialogCtrl = ctrl.getDialogController();
+				TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText()));	
+				dialogCtrl.setView(tableDialog);
+				tableDialog.setVisible(true);			
 			}
 		});
 		if(columns==0) {

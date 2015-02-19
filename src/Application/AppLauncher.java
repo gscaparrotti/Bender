@@ -20,7 +20,7 @@ public class AppLauncher {
 		RestaurantView v = new RestaurantView();
 		IMainController ctrl = new MainController();
 		ctrl.setModel(new Restaurant(), new Menu());
-		ctrl.setControllers(v, new MainViewController(ctrl), DialogController.class);
+		ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
 		ctrl.loadSettings();
 		v.setVisible(true);
 	}
