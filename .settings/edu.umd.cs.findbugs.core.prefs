@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Wed Jan 21 15:14:47 CET 2015
+#Fri Feb 20 16:36:05 CET 2015
 cloud_id=edu.umd.cs.findbugs.cloud.doNothingCloud
 detectorAppendingToAnObjectOutputStream=AppendingToAnObjectOutputStream|true
 detectorAtomicityProblem=AtomicityProblem|true
@@ -134,4 +134,4 @@ detector_threshold=2
 effort=default
 filter_settings=Medium|BAD_PRACTICE,CORRECTNESS,I18N,MALICIOUS_CODE,MT_CORRECTNESS,PERFORMANCE,SECURITY,STYLE|false|20
 filter_settings_neg=EXPERIMENTAL,NOISE|
-run_at_full_build=false
+run_at_full_build=true

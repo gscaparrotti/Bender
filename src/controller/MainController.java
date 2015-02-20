@@ -3,7 +3,7 @@ package controller;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
@@ -57,7 +57,7 @@ public class MainController implements IMainController {
 
 	private void loadMenu(String path) {
 		try {
-			BufferedReader r = new BufferedReader(new FileReader(path));
+			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF8"));
 			while(r.ready()) {
 				String line = r.readLine();
 				if (line != null) {
@@ -106,7 +106,7 @@ public class MainController implements IMainController {
 	
 	public void loadSettings() {
 		try {
-			BufferedReader r = new BufferedReader(new FileReader(SETTINGS_PATH));
+			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(SETTINGS_PATH), "UTF8"));
 			int count = 0;
 			while(r.ready() && count < PATHS.length) {
 				PATHS[count] = r.readLine();
