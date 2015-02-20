@@ -1,2 +1,10 @@
-trallallero -- 1234
-ciao -- 45.5
+Bibita in Lattina -- 2.5
+Piadina -- 3.0
+Pizza Margherita -- 5.0
+Pizza Singola Farcitura -- 7.5
+Pizza Doppia Farcitura -- 8.0
+Birra Lattina -- 2.5
+Birra Bottiglia -- 3.0
+Caramelle o Gomme-- 2.0
+Aperitivo Analcolico -- 3.0
+Aperitivo -- 3.5
