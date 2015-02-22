@@ -83,7 +83,7 @@ public class MainController implements IMainController {
 			return model.getTablesAmount();
 		} catch (Exception e) {
 			showMessageOnMainView(e.getMessage());
-			return 0;
+			return -1;
 		}
 	}
 	

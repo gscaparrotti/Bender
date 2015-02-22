@@ -127,11 +127,16 @@ public class RestaurantView extends JFrame{
 			public void actionPerformed(ActionEvent e) {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				int amount = ctrl.commandLoad();
-				tablePanel.removeAll();
-				tablePanel.repaint();
-				initLayout();
-				for (int i=1; i<=amount; i++) {
-					addTable(i);
+				if(amount==-1) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					showApplicationMessage("Impossibile caricare i dati");
+				} else {
+					tablePanel.removeAll();
+					tablePanel.repaint();
+					initLayout();
+					for (int i=1; i<=amount; i++) {
+						addTable(i);
+					}
 				}
 				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
