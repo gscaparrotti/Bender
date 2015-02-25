@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 import view.ITableDialog;
 import model.Dish;
 import model.IDish;

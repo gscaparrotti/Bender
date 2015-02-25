@@ -1,6 +1,6 @@
 package model;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 
 public class Dish implements IDish{
 

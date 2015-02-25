@@ -9,7 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 import view.RestaurantView;
 import model.Dish;
 import model.IMenu;
