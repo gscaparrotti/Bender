@@ -1,5 +1,7 @@
 package model;
 
+import benderAccessories.CheckNull;
+
 public class Dish implements IDish{
 
 	/**
@@ -11,6 +13,7 @@ public class Dish implements IDish{
 	private double price;
 	
 	public Dish(String name, double price) {
+		CheckNull.checkNull(name);
 		this.name=name;
 		this.price=price;
 	}

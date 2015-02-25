@@ -1,10 +1,13 @@
 package controller;
 
+import benderAccessories.CheckNull;
+
 public class MainViewController implements IMainViewController {
 	
 	private IMainController mainController;
 	
 	public MainViewController(IMainController ctrl) {
+		CheckNull.checkNull(ctrl);
 		this.mainController = ctrl;
 	}
 	

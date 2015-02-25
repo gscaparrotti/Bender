@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
+import benderAccessories.CheckNull;
 import view.ITableDialog;
 import model.Dish;
 import model.IDish;
@@ -23,6 +24,7 @@ public class DialogController implements IDialogController {
 	private IRestaurant model;
 	
 	public DialogController(IMainController ctrl) {
+		CheckNull.checkNull(ctrl);
 		this.ctrl = ctrl;
 		updateReferences();
 	}
@@ -63,6 +65,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandAdd(int tableNumber, IDish item, int amount) {
+		CheckNull.checkNull(item);
 		try {
 			model.addOrder(tableNumber, item, amount);
 			tableDialog.clearErrors();
@@ -77,6 +80,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandRemove(int tableNumber, IDish item, int amount) {
+		CheckNull.checkNull(item);
 		try {
 			model.removeOrder(tableNumber, item, amount);
 			tableDialog.clearErrors();
@@ -91,6 +95,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandUpdateProcessedOrders(int tableNumber, IDish item) {
+		CheckNull.checkNull(item);
 		try {
 			model.setOrderAsProcessed(tableNumber, item);
 		} catch (Exception e) {
@@ -104,6 +109,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandPrint(int tableNumber, JTable c, String up, String down) {
+		CheckNull.checkNull(c, up, down);
 		boolean remaining;
 		remaining = verifyRemaining(tableNumber);
 		if (!remaining) {
@@ -154,6 +160,7 @@ public class DialogController implements IDialogController {
 	
 	
 	private void commandErrorUpdate(Exception e) {
+		CheckNull.checkNull(e);
 		tableDialog.showError(e);
 	}
 
