@@ -3,6 +3,8 @@ package model;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import benderAccessories.CheckNull;
+
 public class Menu extends LinkedList<IDish> implements IMenu{
 	
 	/**
@@ -14,6 +16,9 @@ public class Menu extends LinkedList<IDish> implements IMenu{
 	}
 	
 	public void addItems(IDish... items) {
+		for(IDish i : items) {
+			CheckNull.checkNull(i);
+		}
 		this.addAll(Arrays.asList(items));
 	}
 	

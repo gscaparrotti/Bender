@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
+import benderAccessories.CheckNull;
 import view.RestaurantView;
 import model.Dish;
 import model.IMenu;
@@ -33,6 +34,7 @@ public class MainController implements IMainController {
 	
 	@Override
 	public void setModel(IRestaurant model, IMenu menu) {
+		CheckNull.checkNull(model, menu);
 		this.menu = menu;
 		this.model = model;
 		loadMenu(PATHS[1]);
@@ -40,6 +42,7 @@ public class MainController implements IMainController {
 	
 	@Override
 	public void setMainViewAndControllers(RestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl) {
+		CheckNull.checkNull(view, viewCtrl, dialogCtrl);
 		this.dc = dialogCtrl;
 		this.view = view;
 		view.setControllers(this, viewCtrl);
@@ -56,6 +59,7 @@ public class MainController implements IMainController {
 	}
 
 	private void loadMenu(String path) {
+		CheckNull.checkNull(path);
 		try {
 			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF8"));
 			while(r.ready()) {
@@ -119,24 +123,18 @@ public class MainController implements IMainController {
 	}
 	
 	public void showMessageOnMainView(String message) {
-		if (view != null) {
+		if (view != null && message!=null) {
 			view.showApplicationMessage(message);
-		}
-	}
-	
-	public void showIrreversibleErrorOnMainView(String message) {
-		if (view != null) {
-			view.showIrreversibleError(message);
 		} else {
 			System.out.println(message);
 		}
 	}
- 	
-	public void checkNull(Object... obj) {
-		for(Object o : obj) {
-			if(o==null) {
-				throw new NullPointerException();
-			}
+	
+	public void showIrreversibleErrorOnMainView(String message) {
+		if (view != null && message!=null) {
+			view.showIrreversibleError(message);
+		} else {
+			System.out.println(message);
 		}
 	}
 

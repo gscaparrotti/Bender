@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import benderAccessories.CheckNull;
 import controller.IMainController;
 import controller.IMainViewController;
 import controller.MainController;
@@ -49,6 +50,7 @@ public class RestaurantView extends JFrame{
 	}
 	
 	public void setControllers(final IMainController controller, final IMainViewController viewController) {
+		CheckNull.checkNull(controller, viewController);
 		this.ctrl = controller;
 		this.viewCtrl = viewController;
 	}
@@ -157,6 +159,9 @@ public class RestaurantView extends JFrame{
 	}
 	
 	private void addTable(int n) {
+		if(n<=0) {
+			throw new IllegalArgumentException();
+		}
 		JButton newButton = new JButton(Integer.toString(n));
 		newButton.setFont(newButton.getFont().deriveFont(Font.BOLD, 32));
 		newButton.setPreferredSize(new Dimension(RestaurantView.SCREEN.width/10, RestaurantView.SCREEN.height/10));
@@ -186,10 +191,12 @@ public class RestaurantView extends JFrame{
 	}
 	
 	public void showApplicationMessage(String message) {
+		CheckNull.checkNull(message);
 		JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",  JOptionPane.INFORMATION_MESSAGE);
 	}
 	
 	public void showIrreversibleError(String message) {
+		CheckNull.checkNull(message);
 		JOptionPane.showMessageDialog(this, "Si è verificato un errore irreversibile: ".concat(message).concat
 				("L'applicazione verrà chiusa"), "Errore Fatale",  JOptionPane.ERROR_MESSAGE);
 		exit();

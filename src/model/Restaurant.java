@@ -2,7 +2,7 @@ package model;
 
 import java.util.HashMap;
 import java.util.Map;
-import benderAccessories.CheckNull;
+import java.util.Objects;
 
 public class Restaurant implements IRestaurant {
 	
@@ -34,7 +34,7 @@ public class Restaurant implements IRestaurant {
 
 	@Override
 	public void addOrder(int table, IDish item, int quantity) {
-		//Objects.requireNonNull(obj)
+		Objects.requireNonNull(item);
 		if (!checkIfCorrect(table, item, quantity)) {
 			throw new IllegalArgumentException(errorMessage);
 		}
@@ -49,6 +49,7 @@ public class Restaurant implements IRestaurant {
 
 	@Override
 	public void removeOrder(int table, IDish item, int quantity) {
+		Objects.requireNonNull(item);
 		if (!checkIfCorrect(table, item, quantity) || !tables.containsKey(table) 
 			|| !tables.get(table).containsKey(item) || tables.get(table).get(item).getX() - quantity < 0) {
 			throw new IllegalArgumentException(errorMessage);
@@ -68,6 +69,7 @@ public class Restaurant implements IRestaurant {
 	
 	@Override
 	public void setOrderAsProcessed(int table, IDish item) {
+		Objects.requireNonNull(item);
 		if (!checkIfCorrect(table, item, 1) || !tables.containsKey(table) || tables.get(table).get(item) == null) {
 			throw new IllegalArgumentException(errorMessage);
 		}
@@ -111,7 +113,6 @@ public class Restaurant implements IRestaurant {
 	}
 	
 	private boolean checkIfCorrect(int table, IDish item, int quantity) {
-		CheckNull.checkNull(item);
 		if(table<=0 || table>tablesAmount || item==null || quantity<=0) {
 			return false;
 		}

@@ -11,7 +11,7 @@ public class Variation implements IDish {
 	private IDish decoratedDish;
 
 	public Variation(String variationName, double cost, IDish item) {
-		if(item == null) {
+		if(item == null || variationName==null) {
 			throw new NullPointerException();
 		}
 		this.decoratedDish = item;
