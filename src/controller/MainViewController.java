@@ -1,6 +1,6 @@
 package controller;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 
 public class MainViewController implements IMainViewController {
 	

@@ -3,7 +3,7 @@ package model;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 
 public class Menu extends LinkedList<IDish> implements IMenu{
 	

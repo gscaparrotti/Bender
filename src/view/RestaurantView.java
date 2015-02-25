@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import benderAccessories.CheckNull;
+import benderUtilities.CheckNull;
 import controller.IMainController;
 import controller.IMainViewController;
 import controller.MainController;

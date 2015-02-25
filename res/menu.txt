@@ -7,4 +7,5 @@ Birra Lattina -- 2.5
 Birra Bottiglia -- 3.0
 Caramelle o Gomme-- 2.0
 Aperitivo Analcolico -- 3.0
-Aperitivo -- 3.5
+Aperitivo -- 5.0
+Trallallero -- 4000.0
