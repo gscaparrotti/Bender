@@ -13,7 +13,7 @@ public interface IRestaurantView {
 
 	/**
 	 * @param controller Sets the {@link IMainController}, which will be used to load, save and get all the resources.
-	 * @param viewController
+	 * @param viewController The {@link IMainViewController} which will control this view.
 	 */
 	public void setControllers(IMainController controller,
 			IMainViewController viewController);
