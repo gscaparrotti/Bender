@@ -28,7 +28,7 @@ public interface IMainController {
 
 	/**
 	 * @param view The {@link IRestaurantView} instance used in the program.
-	 * @param viewCtrl Your {@link IMainViewController}, which controls the {@param view}.
+	 * @param viewCtrl Your {@link IMainViewController}, which controls the view.
 	 * @param dialogCtrl Your {@link IDialogController}, which will control the {@link ITableDialog} instances.
 	 * 
 	 * Sets the main view and the related controllers.

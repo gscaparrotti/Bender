@@ -43,8 +43,8 @@ public interface IRestaurant extends Serializable{
 	public void removeOrder(int table, IDish item, int quantity);
 	
 	/**
-	 * @param table
-	 * @param item
+	 * @param table The table whose orders you want to update
+	 * @param item The item you want to update
 	 * 
 	 * Set the provided order as processed. More formally, this
 	 * method sets the number of processed items to the value of 
@@ -54,7 +54,7 @@ public interface IRestaurant extends Serializable{
 	public void setOrderAsProcessed(int table, IDish item);
 	
 	/**
-	 * @param table
+	 * @param table the table of whih you want the orders
 	 * @return a map representing all the orders
 	 * 
 	 * Provides all the orders of the selected table
@@ -62,7 +62,7 @@ public interface IRestaurant extends Serializable{
 	public Map<IDish, Pair<Integer, Integer>> getOrders(int table);
 	
 	/**
-	 * @param table
+	 * @param table The table whose orders you want to update
 	 * 
 	 * Deletes all the orders for the selected table
 	 */
