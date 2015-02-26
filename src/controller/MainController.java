@@ -10,11 +10,15 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 
 import benderUtilities.CheckNull;
-import view.RestaurantView;
+import view.IRestaurantView;
 import model.Dish;
 import model.IMenu;
 import model.IRestaurant;
 
+/**
+ * @author Giacomo Scaparrotti
+ *
+ */
 public class MainController implements IMainController {
 	
 	public static final String DIR = System.getProperty("user.dir"); //directory corrente
@@ -26,9 +30,14 @@ public class MainController implements IMainController {
 	private static final String SETTINGS_PATH = DIR + SEPARATOR + SETTINGS_FILE;
 	private IRestaurant model;
 	private IMenu menu;
-	private RestaurantView view;
+	private IRestaurantView view;
 	private IDialogController dc;
 	
+	/**
+	 * Creates a new empty {@link MainController}. Before you can use it, you have to set the model and the other controllers,
+	 * using the {@link #setModel(IRestaurant, IMenu)} and {@link #setMainViewAndControllers(IRestaurantView, IMainViewController, IDialogController)}
+	 * methods.
+	 */
 	public MainController() {
 	}
 	
@@ -41,7 +50,7 @@ public class MainController implements IMainController {
 	}
 	
 	@Override
-	public void setMainViewAndControllers(RestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl) {
+	public void setMainViewAndControllers(IRestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl) {
 		CheckNull.checkNull(view, viewCtrl, dialogCtrl);
 		this.dc = dialogCtrl;
 		this.view = view;

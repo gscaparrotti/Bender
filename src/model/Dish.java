@@ -2,6 +2,10 @@ package model;
 
 import benderUtilities.CheckNull;
 
+/**
+ * @author Giacomo Scaparrotti
+ *
+ */
 public class Dish implements IDish{
 
 	/**
@@ -12,6 +16,12 @@ public class Dish implements IDish{
 	private String name;
 	private double price;
 	
+	/**
+	 * @param name The name of this dish
+	 * @param price The price of this dish
+	 * 
+	 * Creates a new dish with the given name and price.
+	 */
 	public Dish(String name, double price) {
 		CheckNull.checkNull(name);
 		this.name=name;
