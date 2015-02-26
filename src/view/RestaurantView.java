@@ -29,7 +29,11 @@ import controller.IMainViewController;
 import controller.MainController;
 import viewAccessories.ThumbnailIcon;
 
-public class RestaurantView extends JFrame{
+/**
+ * @author Giacomo Scaparrotti
+ *
+ */
+public class RestaurantView extends JFrame implements IRestaurantView{
 
 	private static final long serialVersionUID = 2118299654730994785L;
 	private static final Dimension SCREEN = Toolkit.getDefaultToolkit().getScreenSize();
@@ -40,6 +44,10 @@ public class RestaurantView extends JFrame{
 	private IMainController ctrl;
 	private IMainViewController viewCtrl;
 	
+	/**
+	 * Creates a new {@link RestaurantView} windows. It is resizable, and its preferred size is
+	 * 75% of each screen's dimensions.
+	 */
 	public RestaurantView() {
 		super("Bender");
 		this.setPreferredSize(new Dimension((int) (SCREEN.width*0.75), (int) (SCREEN.height*0.75)));
@@ -49,6 +57,7 @@ public class RestaurantView extends JFrame{
 		buildView();
 	}
 	
+	@Override
 	public void setControllers(final IMainController controller, final IMainViewController viewController) {
 		CheckNull.checkNull(controller, viewController);
 		this.ctrl = controller;
@@ -186,15 +195,18 @@ public class RestaurantView extends JFrame{
 		validate();
 	}
 	
+	@Override
 	public boolean getAutoSaveOption() {
 		return autoSaveCheckBox.isSelected();
 	}
 	
+	@Override
 	public void showApplicationMessage(String message) {
 		CheckNull.checkNull(message);
 		JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",  JOptionPane.INFORMATION_MESSAGE);
 	}
 	
+	@Override
 	public void showIrreversibleError(String message) {
 		CheckNull.checkNull(message);
 		JOptionPane.showMessageDialog(this, "Si è verificato un errore irreversibile: ".concat(message).concat

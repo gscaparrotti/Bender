@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @author Giacomo Scaparrotti
+ *
+ */
 public class Restaurant implements IRestaurant {
 	
 	/**
@@ -14,9 +18,13 @@ public class Restaurant implements IRestaurant {
 	private int tablesAmount = 0;
 	private final static String errorMessage = "Dati inseriti non corretti. Controllare.";
 	
+	/**
+	 * Creates a new empty {@link Restaurant}
+	 */
 	public Restaurant() {
 	}
 	
+	@Override
 	public int addTable() {
 		this.tablesAmount++;
 		return this.tablesAmount;

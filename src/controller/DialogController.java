@@ -5,12 +5,10 @@ import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 
 import benderUtilities.CheckNull;
 import view.ITableDialog;
-import model.Dish;
 import model.IDish;
 import model.IMenu;
 import model.IRestaurant;
@@ -23,12 +21,19 @@ public class DialogController implements IDialogController {
 	private IMenu menu;
 	private IRestaurant model;
 	
+	/**
+	 * @param ctrl A {@link IMainController} instance
+	 * 
+	 * Creates a new DialogController object. It need a MainController as an argument,
+	 * since it is needed to get the {@link IMenu} and the {@link IRestaurant}.
+	 */
 	public DialogController(IMainController ctrl) {
 		CheckNull.checkNull(ctrl);
 		this.ctrl = ctrl;
 		updateReferences();
 	}
 	
+	@Override
 	public void updateReferences() {
 		this.menu = ctrl.getMenu();
 		this.model = ctrl.getRestaurant();
@@ -38,7 +43,7 @@ public class DialogController implements IDialogController {
 	 * @see controller.IDialogController#getMenu()
 	 */
 	@Override
-	public Dish[] getMenu() {
+	public IDish[] getMenu() {
 		return menu.getDishesArray();
 	}
 	
@@ -109,18 +114,11 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandPrint(int tableNumber, JTable c, String up, String down) {
-		CheckNull.checkNull(c, up, down);
-		boolean remaining;
-		remaining = verifyRemaining(tableNumber);
-		if (!remaining) {
-			printBillFromJTable(c, up, down);
-		} else {
-			final int n = JOptionPane.showConfirmDialog(c.getParent(), 
-					      "Attenzione, ci sono ancora ordini da evadere. Continuare?", "Stampa",  JOptionPane.YES_NO_OPTION);
-			if (n == JOptionPane.YES_OPTION) {
-				printBillFromJTable(c, up, down);
-			}	
+		CheckNull.checkNull(c);
+		if (verifyRemaining(tableNumber)) {
+			tableDialog.showMessage("Attenzione: si sta per stampare il conto di un tavolo con ordini non ancora evasi.");	
 		}
+		printBillFromJTable(c, up, down);
 	}
 	
 	/* (non-Javadoc)
@@ -130,6 +128,15 @@ public class DialogController implements IDialogController {
 	public void commandReset(int tableNumber) {
 		model.resetTable(tableNumber);
 		updateStatus(tableNumber);
+	}
+	
+	@Override
+	public void setView(ITableDialog td) {
+		if(td==null) {
+			throw new NullPointerException();
+		}
+		this.tableDialog = td;
+		td.setControllerAndBuildView(this);
 	}
 	
 	private void updateStatus(int tableNumber) {
@@ -152,9 +159,13 @@ public class DialogController implements IDialogController {
 	
 	private void printBillFromJTable(JTable c, String up, String down) {
 		try {
-			c.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat(up), new MessageFormat(down));
+			if(up!=null && down !=null) {
+				c.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat(up), new MessageFormat(down));
+			} else {
+				c.print(JTable.PrintMode.FIT_WIDTH);
+			}
 		} catch (PrinterException e) {
-			JOptionPane.showMessageDialog(c.getParent(), "Errore nella stampa.");
+			tableDialog.showError(e);
 		}
 	}
 	
@@ -162,15 +173,6 @@ public class DialogController implements IDialogController {
 	private void commandErrorUpdate(Exception e) {
 		CheckNull.checkNull(e);
 		tableDialog.showError(e);
-	}
-
-	@Override
-	public void setView(ITableDialog td) {
-		if(td==null) {
-			throw new NullPointerException();
-		}
-		this.tableDialog = td;
-		td.setControllerAndBuildView(this);
 	}
 
 }

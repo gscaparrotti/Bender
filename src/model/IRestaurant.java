@@ -9,16 +9,35 @@ import java.util.Map;
  */
 public interface IRestaurant extends Serializable{
 	
+	/**
+	 * @return the new amount of tables
+	 * 
+	 * Adds a new table
+	 */
 	public int addTable();
 	
+	/**
+	 * @return the new amount of tables
+	 * 
+	 * Removes the last added table
+	 */
 	public int removeTable();
 	
 	/**
+	 * @param table The table whose orders you want to update
+	 * @param item the {@link IDish} you want to add
+	 * @param quantity to amount of item to add
+	 * 
 	 * Adds a new order to the provived table
 	 */
+
 	public void addOrder(int table, IDish item, int quantity);
 	
 	/**
+	 * @param table The table whose orders you want to update
+	 * @param item the {@link IDish} you want to remove
+	 * @param quantity to amount of item to remove
+	 * 
 	 * Removes a order from the provived table
 	 */	
 	public void removeOrder(int table, IDish item, int quantity);

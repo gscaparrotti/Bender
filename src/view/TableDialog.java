@@ -37,6 +37,10 @@ import net.miginfocom.swing.MigLayout;
 
 import java.awt.BorderLayout;
 
+/**
+ * @author Giacomo Scaparrotti
+ *
+ */
 public class TableDialog extends JDialog implements ITableDialog {
 	
 	private static final long serialVersionUID = -2269793459529910803L;
@@ -55,8 +59,12 @@ public class TableDialog extends JDialog implements ITableDialog {
 	private int tableNumber;
 	private transient IDialogController ctrl; 
 
+
 	/**
-	 * Create the dialog.
+	 * @param ctrl The {@link IMainController} which will provide all the needed resources
+	 * @param tableNumber the ID of the table represented by this dialog
+	 * 
+	 * Creates a new table dialog.
 	 */
 	public TableDialog(IMainController ctrl, int tableNumber) {
 		super();
@@ -274,6 +282,11 @@ public class TableDialog extends JDialog implements ITableDialog {
 		if (n == JOptionPane.YES_OPTION) {
 			ctrl.commandReset(tableNumber);
 		}	
+	}
+
+	@Override
+	public void showMessage(String message) {
+		JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",  JOptionPane.INFORMATION_MESSAGE);		
 	}
 
 }
