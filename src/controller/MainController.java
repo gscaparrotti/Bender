@@ -1,8 +1,10 @@
 package controller;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -23,8 +25,8 @@ public class MainController implements IMainController {
 	
 	public static final String DIR = System.getProperty("user.dir"); //directory corrente
 	public static final String SEPARATOR = System.getProperty("file.separator");
-	private static final String DEFAULT_RESTAURANT_FILE = "res" + SEPARATOR + "BenderData.dat";
-	private static final String DEFAULT_MENU_FILE = "res" + SEPARATOR + "menu.txt";
+	private static final String DEFAULT_RESTAURANT_FILE = "BenderData.dat";
+	private static final String DEFAULT_MENU_FILE = "data" + SEPARATOR + "menu.txt";
 	private static final String[] PATHS = new String[] {DIR + SEPARATOR + DEFAULT_RESTAURANT_FILE, DIR + SEPARATOR + DEFAULT_MENU_FILE};
 	private IRestaurant model;
 	private IMenu menu;
@@ -72,7 +74,11 @@ public class MainController implements IMainController {
 	private void loadMenu(String path) {
 		CheckNull.checkNull(path);
 		try {
-			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(path), "UTF8"));
+			InputStream in = MainController.class.getResourceAsStream("/menu.txt");
+			if(new File(PATHS[1]).exists()) {
+				in = new FileInputStream(PATHS[1]);
+			}
+			BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF8"));
 			while(r.ready()) {
 				String line = r.readLine();
 				if (line != null) {

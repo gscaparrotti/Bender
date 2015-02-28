@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import benderUtilities.CheckNull;
 import controller.IMainController;
 import controller.IMainViewController;
-import controller.MainController;
 import viewAccessories.ThumbnailIcon;
 
 /**
@@ -73,7 +72,7 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		JButton exit = new JButton("Esci");
 		JButton load = new JButton("Carica");
 		JButton save = new JButton("Salva");
-		ThumbnailIcon icon = new ThumbnailIcon(MainController.DIR + MainController.SEPARATOR + "res" + MainController.SEPARATOR + "icon.gif");
+		ThumbnailIcon icon = new ThumbnailIcon(RestaurantView.class.getResource("/icon.gif"));
 		JLabel iconLabel = new JLabel(icon);
 		JPanel buttonPanelInternal = new JPanel(new GridBagLayout());
 		GridBagConstraints cnst = new GridBagConstraints();
