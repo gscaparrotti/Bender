@@ -210,7 +210,7 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 	public void showIrreversibleError(String message) {
 		CheckNull.checkNull(message);
 		JOptionPane.showMessageDialog(this, "Si è verificato un errore irreversibile: ".concat(message).concat
-				("L'applicazione verrà chiusa"), "Errore Fatale",  JOptionPane.ERROR_MESSAGE);
+				(". L'applicazione verrà chiusa"), "Errore Fatale",  JOptionPane.ERROR_MESSAGE);
 		exit();
 	}
 	

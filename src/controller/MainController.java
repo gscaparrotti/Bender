@@ -26,8 +26,6 @@ public class MainController implements IMainController {
 	private static final String DEFAULT_RESTAURANT_FILE = "res" + SEPARATOR + "BenderData.dat";
 	private static final String DEFAULT_MENU_FILE = "res" + SEPARATOR + "menu.txt";
 	private static final String[] PATHS = new String[] {DIR + SEPARATOR + DEFAULT_RESTAURANT_FILE, DIR + SEPARATOR + DEFAULT_MENU_FILE};
-	private static final String SETTINGS_FILE = "settings.txt";
-	private static final String SETTINGS_PATH = DIR + SEPARATOR + SETTINGS_FILE;
 	private IRestaurant model;
 	private IMenu menu;
 	private IRestaurantView view;
@@ -46,7 +44,6 @@ public class MainController implements IMainController {
 		CheckNull.checkNull(model, menu);
 		this.menu = menu;
 		this.model = model;
-		loadMenu(PATHS[1]);
 	}
 	
 	@Override
@@ -55,6 +52,11 @@ public class MainController implements IMainController {
 		this.dc = dialogCtrl;
 		this.view = view;
 		view.setControllers(this, viewCtrl);
+	}
+	
+	@Override
+	public void loadDefaultMenu() {
+		loadMenu(PATHS[1]);	
 	}
 	
 	@Override
@@ -82,7 +84,7 @@ public class MainController implements IMainController {
 			}
 			r.close();
 		} catch (Exception e) {
-			showMessageOnMainView(e.getMessage());
+			showIrreversibleErrorOnMainView("Impossibile caricare il menu " + e.getMessage());
 		}
 	}
 	
@@ -115,20 +117,6 @@ public class MainController implements IMainController {
 		if (view != null && view.getAutoSaveOption()) {
 			commandSave();
 		}		
-	}
-	
-	public void loadSettings() {
-		try {
-			BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(SETTINGS_PATH), "UTF8"));
-			int count = 0;
-			while(r.ready() && count < PATHS.length) {
-				PATHS[count] = r.readLine();
-				count++;
-			}
-			r.close();
-		} catch (Exception e) {
-			showMessageOnMainView(e.getMessage() + " - Verranno utilizzati i percorsi di default");
-		}
 	}
 	
 	public void showMessageOnMainView(String message) {
