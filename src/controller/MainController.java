@@ -46,6 +46,7 @@ public class MainController implements IMainController {
 		CheckNull.checkNull(model, menu);
 		this.menu = menu;
 		this.model = model;
+		loadMenu();
 	}
 	
 	@Override
@@ -54,11 +55,6 @@ public class MainController implements IMainController {
 		this.dc = dialogCtrl;
 		this.view = view;
 		view.setControllers(this, viewCtrl);
-	}
-	
-	@Override
-	public void loadDefaultMenu() {
-		loadMenu(PATHS[1]);	
 	}
 	
 	@Override
@@ -71,8 +67,7 @@ public class MainController implements IMainController {
 		return this.menu;
 	}
 
-	private void loadMenu(String path) {
-		CheckNull.checkNull(path);
+	private void loadMenu() {
 		try {
 			InputStream in = MainController.class.getResourceAsStream("/menu.txt");
 			if(new File(PATHS[1]).exists()) {
