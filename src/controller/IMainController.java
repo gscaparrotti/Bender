@@ -25,6 +25,11 @@ public interface IMainController {
 	 * to call this method every time you create a new instance of this class. 
 	 */
 	public void setModel(IRestaurant model, IMenu menu);
+	
+	/**
+	 * Loads the menu from the default location (src/menu.txt).
+	 */
+	public void loadDefaultMenu();
 
 	/**
 	 * @param view The {@link IRestaurantView} instance used in the program.
@@ -71,11 +76,6 @@ public interface IMainController {
 	 * Checks if the autosaving option is selected, and if so, saves the status of the program.
 	 */
 	public void autoSave();
-	
-	/**
-	 * Loads the user settings. You will likely call this method at the beginning of the program. 
-	 */
-	public void loadSettings();
 	
 	/**
 	 * @param message a {@link String} containing the message
