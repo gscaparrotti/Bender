@@ -1,5 +1,11 @@
 package test;
 
+/*nota per il docente: questa classe di test è stata usata per testare i metodi che gestivano la parte del modello.
+ * successivamente, la classe che conteneva questi metodi è stata divisa nelle tre classi ora presenti, perciò non è direttamente 
+ * funzionante, anche se i metodi che venivano testati sono praticamente uguali a quelli ancora presenti, come si può vedere
+ * dalle signature dei metodi, e questo è il motivo per cui non è stata fatta una nuova classe di test.
+ */
+
 /*import static org.junit.Assert.*;
 import view.TableDialog;
 import controller.RestaurantController;
