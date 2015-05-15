@@ -18,8 +18,6 @@ public class DialogController implements IDialogController {
 	
 	private ITableDialog tableDialog;
 	private IMainController ctrl;
-	private IMenu menu;
-	private IRestaurant model;
 	
 	/**
 	 * @param ctrl A {@link IMainController} instance
@@ -30,13 +28,6 @@ public class DialogController implements IDialogController {
 	public DialogController(IMainController ctrl) {
 		CheckNull.checkNull(ctrl);
 		this.ctrl = ctrl;
-		updateReferences();
-	}
-	
-	@Override
-	public void updateReferences() {
-		this.menu = ctrl.getMenu();
-		this.model = ctrl.getRestaurant();
 	}
 	
 	/* (non-Javadoc)
@@ -44,7 +35,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public IDish[] getMenu() {
-		return menu.getDishesArray();
+		return ctrl.getMenu().getDishesArray();
 	}
 	
 	/* (non-Javadoc)
@@ -52,7 +43,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandOrdersViewUpdate(final int tableNumber) {
-		Iterator<Entry<IDish, Pair<Integer, Integer>>> i = model.getOrders(tableNumber).entrySet().iterator();
+		Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet().iterator();
 		double bill = 0;
 		double effectiveBill = 0;
 		tableDialog.clearTab();
@@ -72,7 +63,7 @@ public class DialogController implements IDialogController {
 	public void commandAdd(int tableNumber, IDish item, int amount) {
 		CheckNull.checkNull(item);
 		try {
-			model.addOrder(tableNumber, item, amount);
+			ctrl.getRestaurant().addOrder(tableNumber, item, amount);
 			tableDialog.clearErrors();
 		} catch (Exception e) {
 			commandErrorUpdate(e);
@@ -87,7 +78,7 @@ public class DialogController implements IDialogController {
 	public void commandRemove(int tableNumber, IDish item, int amount) {
 		CheckNull.checkNull(item);
 		try {
-			model.removeOrder(tableNumber, item, amount);
+			ctrl.getRestaurant().removeOrder(tableNumber, item, amount);
 			tableDialog.clearErrors();
 		} catch (Exception e) {
 			commandErrorUpdate(e);
@@ -102,7 +93,7 @@ public class DialogController implements IDialogController {
 	public void commandUpdateProcessedOrders(int tableNumber, IDish item) {
 		CheckNull.checkNull(item);
 		try {
-			model.setOrderAsProcessed(tableNumber, item);
+			ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
 		} catch (Exception e) {
 			commandErrorUpdate(e);
 		}
@@ -126,7 +117,7 @@ public class DialogController implements IDialogController {
 	 */
 	@Override
 	public void commandReset(int tableNumber) {
-		model.resetTable(tableNumber);
+		ctrl.getRestaurant().resetTable(tableNumber);
 		updateStatus(tableNumber);
 	}
 	
@@ -145,7 +136,7 @@ public class DialogController implements IDialogController {
 	}
 	
 	private boolean verifyRemaining(int tableNumber) {
-		Iterator<Entry<IDish, Pair<Integer, Integer>>> i = model.getOrders(tableNumber).entrySet().iterator();
+		Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet().iterator();
 		boolean remaining = false;
 		while (i.hasNext()) {
 			Entry<IDish, Pair<Integer, Integer>> entry = i.next();

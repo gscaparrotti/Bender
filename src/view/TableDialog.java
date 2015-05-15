@@ -11,14 +11,11 @@ import java.awt.Font;
 
 import javax.swing.JComboBox;
 
-import model.Dish;
 import model.IDish;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -26,11 +23,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.JSpinner;
 
+import viewDialogs.DialogJTable;
 import controller.IDialogController;
 import controller.IMainController;
 import net.miginfocom.swing.MigLayout;
@@ -44,20 +40,18 @@ import java.awt.BorderLayout;
 public class TableDialog extends JDialog implements ITableDialog {
 	
 	private static final long serialVersionUID = -2269793459529910803L;
-	private static final String Piatto = "Piatto";
-	private static final String Costo = "Costo Unitario";
-	private static final String[] PROPS = new String[] {Piatto, Costo, "Quantità", "Costo totale", "Evaso"};
-	private static final Object[][] INIT_DATA = new Object[][] {};
+
+	private static final String[] PROPS = new String[] {"Piatto", "Costo", "Quantità", "Costo totale", "Evaso"};
 	private static final String BILL_TEXT = "Conto Totale: ";
 	private static final String EFFECTIVE_BILL_TEXT = "Conto Effettivo: ";
 	private static final String CURRENCY_SYMBOL = " €";
 	private static final String STRING_SEPARATOR = " - ";
 	private JLabel errorLabel = new JLabel();
 	private JLabel lblContoTotale = new JLabel(BILL_TEXT);
-	private DefaultTableModel tm = new DefaultTableModel(INIT_DATA, PROPS);
-	private JTable orders = new JTable(tm);
+	private DialogJTable orders;
 	private int tableNumber;
-	private transient IDialogController ctrl; 
+	private IDialogController ctrl;
+	private IMainController mainCtrl;
 
 
 	/**
@@ -70,6 +64,8 @@ public class TableDialog extends JDialog implements ITableDialog {
 		super();
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.tableNumber = tableNumber;
+		this.mainCtrl = ctrl;
+		this.orders = new DialogJTable(PROPS, mainCtrl, tableNumber);
 	}
 	
 	public void setControllerAndBuildView(IDialogController dialogCtrl) {
@@ -135,37 +131,6 @@ public class TableDialog extends JDialog implements ITableDialog {
 		gbc_lblPiattiAttualmenteOrdinati.gridy = 3;
 		getContentPane().add(lblPiattiAttualmenteOrdinati, gbc_lblPiattiAttualmenteOrdinati);
 		
-		orders.setEnabled(false);
-		orders.getColumnModel().setColumnSelectionAllowed(false);
-		orders.addMouseListener(new MouseListener() {
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {}
-			
-			@Override
-			public void mousePressed(MouseEvent e) {}
-			
-			@Override
-			public void mouseExited(MouseEvent e) {}
-			
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-			
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				JTable j = (JTable) (e.getSource());
-				int rowIndex = j.rowAtPoint(e.getPoint());
-				if (rowIndex >= 0) {
-					IDish item = new Dish((String) (tm.getValueAt(rowIndex, j.getColumn(Piatto).getModelIndex())),
-							             (Double) (tm.getValueAt(rowIndex, j.getColumn(Costo).getModelIndex())));
-					if (e.getButton() == MouseEvent.BUTTON1) {
-						ctrl.commandUpdateProcessedOrders(tableNumber, item);
-					} else if (e.getButton() == MouseEvent.BUTTON3) {
-						ctrl.commandRemove(tableNumber, item, 1);
-					}
-				}
-			}
-		});
 		orders.setToolTipText("Tasto sinistro per indicare come evaso, tasto destro per eliminare un piatto");
 		
 		final JScrollPane scroll = new JScrollPane(orders);
@@ -256,7 +221,7 @@ public class TableDialog extends JDialog implements ITableDialog {
 	
 	@Override
 	public void clearTab() {
-		tm.setDataVector(INIT_DATA, PROPS);
+		orders.reset();
 	}
 	
 	@Override
@@ -270,7 +235,7 @@ public class TableDialog extends JDialog implements ITableDialog {
 	}
 	
 	private void addRowToTableModel(Object[] obj) {
-		tm.addRow(obj);
+		orders.addRow(obj);
 	}
 	
 	private void printHandler() {

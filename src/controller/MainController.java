@@ -32,6 +32,7 @@ public class MainController implements IMainController {
 	private IMenu menu;
 	private IRestaurantView view;
 	private IDialogController dc;
+	private IMainViewController mvc;
 	
 	/**
 	 * Creates a new empty {@link MainController}. Before you can use it, you have to set the model and the other controllers,
@@ -53,7 +54,9 @@ public class MainController implements IMainController {
 	public void setMainViewAndControllers(IRestaurantView view, IMainViewController viewCtrl, IDialogController dialogCtrl) {
 		CheckNull.checkNull(view, viewCtrl, dialogCtrl);
 		this.dc = dialogCtrl;
+		this.mvc = viewCtrl;
 		this.view = view;
+		mvc.setView(view);
 		view.setControllers(this, viewCtrl);
 	}
 	
@@ -95,7 +98,6 @@ public class MainController implements IMainController {
 			final ObjectInput ois = new ObjectInputStream(new FileInputStream(PATHS[0]));
 			this.model = (IRestaurant) ois.readObject();
 			ois.close();
-			dc.updateReferences();
 			return model.getTablesAmount();
 		} catch (Exception e) {
 			showMessageOnMainView(e.getMessage());
@@ -133,12 +135,21 @@ public class MainController implements IMainController {
 			view.showIrreversibleError(message);
 		} else {
 			System.out.println(message);
+			exit();
 		}
 	}
 
 	@Override
 	public IDialogController getDialogController() {
 		return this.dc;
+	}
+	
+	public IMainViewController getMainViewController() {
+		return this.mvc;
+	}
+	
+	private void exit() {
+		System.exit(0);
 	}
 
 }

@@ -43,6 +43,15 @@ public interface IMainController {
 	 * otherwise the behaviour of this method is undefined.
 	 */
 	public IDialogController getDialogController();
+	
+	/**
+	 * @return the prevoiously set {@link IMainViewController} instance.
+	 * 
+	 * Provides the {@link IMainViewController} used by the {@link IRestaurantView}. Before calling this
+	 * method, you must have called the {@link #setMainViewAndControllers(IRestaurantView, IMainViewController, IDialogController)} method at least once,
+	 * otherwise the behaviour of this method is undefined.
+	 */	
+	public IMainViewController getMainViewController();
 
 	/**
 	 * @return The previously set {@link IRestaurant} instance

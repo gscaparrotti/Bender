@@ -10,6 +10,13 @@ import view.IRestaurantView;
  *
  */
 public interface IMainViewController {
+	
+	/**
+	 * @param view
+	 * 
+	 * Set the provided view as the affected view.
+	 */
+	public void setView(IRestaurantView view);
 
 	/**
 	 * @return the ID of the new table
@@ -24,5 +31,7 @@ public interface IMainViewController {
 	 * Removes the last added table from the model.
 	 */
 	public boolean removeTable();
+	
+	public void updateUnprocessedOrders();
 
 }
