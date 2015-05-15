@@ -82,7 +82,6 @@ public class Restaurant implements IRestaurant {
 			throw new IllegalArgumentException(errorMessage);
 		}
 		tables.get(table).get(item).setY(tables.get(table).get(item).getX());
-		
 	}
 	
 	@Override

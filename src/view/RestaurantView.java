@@ -27,6 +27,7 @@ import benderUtilities.CheckNull;
 import controller.IMainController;
 import controller.IMainViewController;
 import viewAccessories.ThumbnailIcon;
+import viewDialogs.MainViewJTable;
 
 /**
  * @author Giacomo Scaparrotti
@@ -36,12 +37,14 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 
 	private static final long serialVersionUID = 2118299654730994785L;
 	private static final Dimension SCREEN = Toolkit.getDefaultToolkit().getScreenSize();
+	private static final String[] PROPS = new String[] {"Piatto", "Tavolo", "Quantità"};
 	private int columns = 0;
 	private JPanel tablePanel = new JPanel(new GridBagLayout());
 	private GridBagConstraints tablecnst = new GridBagConstraints();
 	private JCheckBox autoSaveCheckBox = new JCheckBox("Auto-Salvataggio");
 	private IMainController ctrl;
 	private IMainViewController viewCtrl;
+	private MainViewJTable toBeServed;
 	
 	/**
 	 * Creates a new {@link RestaurantView} windows. It is resizable, and its preferred size is
@@ -53,7 +56,6 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		this.setResizable(true);
 		this.setLocationByPlatform(true);
 		this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		buildView();
 	}
 	
 	@Override
@@ -63,7 +65,7 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		this.viewCtrl = viewController;
 	}
 	
-	private void buildView() {
+	public void buildView() {
 		//creazione del pannello principale
 		JPanel mainPanel = new JPanel(new BorderLayout());
 		//creazione di buttonPanelInternal e buttonPanel con relativi pulsanti e icone
@@ -75,24 +77,25 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		ThumbnailIcon icon = new ThumbnailIcon(RestaurantView.class.getResource("/icon.gif"));
 		JLabel iconLabel = new JLabel(icon);
 		JPanel buttonPanelInternal = new JPanel(new GridBagLayout());
-		GridBagConstraints cnst = new GridBagConstraints();
-		cnst.gridy = 0;
-		cnst.fill = GridBagConstraints.HORIZONTAL;
-		buttonPanelInternal.add(addTable, cnst);
-		cnst.gridy++;
-		buttonPanelInternal.add(removeTable, cnst);
-		cnst.gridy++;
-		buttonPanelInternal.add(load, cnst);
-		cnst.gridy++;
-		buttonPanelInternal.add(save, cnst);
-		cnst.gridy++;
-		buttonPanelInternal.add(exit, cnst);
-		cnst.gridy++;
-		buttonPanelInternal.add(autoSaveCheckBox, cnst);
+		GridBagConstraints buttonCnst = new GridBagConstraints();
+		buttonCnst.gridy = 0;
+		buttonCnst.fill = GridBagConstraints.HORIZONTAL;
+		buttonPanelInternal.add(addTable, buttonCnst);
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(removeTable, buttonCnst);
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(load, buttonCnst);
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(save, buttonCnst);
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(exit, buttonCnst);
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(autoSaveCheckBox, buttonCnst);
 		autoSaveCheckBox.setSelected(true);
-		cnst.gridy++;
-		buttonPanelInternal.add(iconLabel, cnst);
-		cnst.gridy++;
+		autoSaveCheckBox.setBackground(new Color(255, 180, 100)); //new Color(250, 130, 0)
+		buttonCnst.gridy++;
+		buttonPanelInternal.add(iconLabel, buttonCnst);
+		buttonCnst.gridy++;
 		JPanel buttonPanel = new JPanel(new FlowLayout());
 		buttonPanelInternal.setBackground(new Color(255, 180, 100));
 		buttonPanel.setBackground(new Color(255, 180, 100));
@@ -102,11 +105,25 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		JScrollPane jsp = new JScrollPane(tablePanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		jsp.setAutoscrolls(true);
 		tablePanel.setBackground(new Color(255, 255, 200));
-		//creazione del pannello con l'elenco degli ordini
-		/*JPanel ordersPanel = new JPanel(new FlowLayout());*/
+		//creazione della tabella con gli ordini da evadere
+		toBeServed = new MainViewJTable(PROPS, ctrl);
+		toBeServed.setBackground(new Color(255, 255, 200));
+		final JScrollPane scrollToBeServed = new JScrollPane(toBeServed, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, 
+																		JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		toBeServed.setFillsViewportHeight(true);
+		scrollToBeServed.setPreferredSize(new Dimension((int) (buttonPanel.getPreferredSize().getWidth()*1.5), 
+											(int) (buttonPanel.getPreferredSize().getHeight())));
+		JPanel toBeServedPanel = new JPanel(new BorderLayout());
+		JLabel daServire = new JLabel("<html>Piatti da Servire <br/> <br/> </html>");
+		daServire.setHorizontalAlignment(JLabel.CENTER);
+		daServire.setFont(daServire.getFont().deriveFont(Font.BOLD, 18));
+		toBeServedPanel.add(daServire, BorderLayout.NORTH);
+		toBeServedPanel.add(scrollToBeServed, BorderLayout.CENTER);
+		toBeServedPanel.setBackground(new Color(255, 190, 100));
 		//aggiunta dei nuovi JPanel a mainPanel
+		mainPanel.add(toBeServedPanel, BorderLayout.WEST);
 		mainPanel.add(jsp, BorderLayout.CENTER);
-		mainPanel.add(buttonPanel, BorderLayout.EAST);
+		mainPanel.add(buttonPanel, BorderLayout.EAST);	
 		//aggiunta di mainPanel al JFrame
 		this.add(mainPanel);
 		pack();
@@ -148,6 +165,7 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 						addTable(i);
 					}
 				}
+				viewCtrl.updateUnprocessedOrders();
 				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 		});
@@ -179,7 +197,8 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 			public void actionPerformed(ActionEvent e) {
 				TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText()));	
 				ctrl.getDialogController().setView(tableDialog);
-				tableDialog.setVisible(true);			
+				tableDialog.setVisible(true);
+				viewCtrl.updateUnprocessedOrders();
 			}
 		});
 		if(columns==0) {
@@ -211,6 +230,14 @@ public class RestaurantView extends JFrame implements IRestaurantView{
 		JOptionPane.showMessageDialog(this, "Si è verificato un errore irreversibile: ".concat(message).concat
 				(". L'applicazione verrà chiusa"), "Errore Fatale",  JOptionPane.ERROR_MESSAGE);
 		exit();
+	}
+	
+	public void clearUnprocessedOrders() {
+		toBeServed.reset();
+	}
+	
+	public void addUnprocessedOrder(final String Name, final int Table, final int quantity) {
+		toBeServed.addRow(new Object[] {Name, Table, quantity});
 	}
 	
 	private void initLayout() {

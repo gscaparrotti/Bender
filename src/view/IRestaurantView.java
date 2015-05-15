@@ -36,5 +36,19 @@ public interface IRestaurantView {
 	 * Shows a severe error
 	 */
 	public void showIrreversibleError(String message);
+	
+	/**
+	 * Deletes all the previously set unprocessed orders.
+	 */
+	public void clearUnprocessedOrders();
+	
+	/**
+	 * @param Name The name of the dish
+	 * @param Table the table which ordered that dish
+	 * @param quantity the amount of dishes that must still be served
+	 * 
+	 * Adds a new unprocessed order.
+	 */
+	public void addUnprocessedOrder(final String Name, final int Table, final int quantity);
 
 }

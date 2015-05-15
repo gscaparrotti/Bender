@@ -1,5 +1,11 @@
 package Application;
 
+import java.awt.Color;
+
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.UnsupportedLookAndFeelException;
+
 import model.Menu;
 import model.Restaurant;
 import controller.IMainController;
@@ -28,7 +34,31 @@ public class AppLauncher {
 		IMainController ctrl = new MainController();
 		ctrl.setModel(new Restaurant(), new Menu());
 		ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
+		setLookAndFeel();
+		v.buildView();
 		v.setVisible(true);
+	}
+	
+	private static void setLookAndFeel() {
+		UIManager.put("nimbusBase", new Color(255, 180, 100));
+		UIManager.put("nimbusBlueGrey", new Color(255, 255, 200));
+		UIManager.put("control", new Color(255, 255, 180));
+		UIManager.put("nimbusFocus", new Color(255,200,150));
+		UIManager.put("nimbusSelectionBackground", new Color(255,200,150));
+		UIManager.put("nimbusSelectedText", new Color(0,0,0));
+		UIManager.put("nimbusInfoBlue", new Color(255,200,110));
+		try {
+		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+		        if ("Nimbus".equals(info.getName())) {
+		            UIManager.setLookAndFeel(info.getClassName());
+		            break;
+		        }
+		    }
+		} catch (ClassNotFoundException | InstantiationException
+				| IllegalAccessException | UnsupportedLookAndFeelException
+				 e) {
+		    
+		}
 	}
 
 }

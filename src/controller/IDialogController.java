@@ -5,7 +5,6 @@ import javax.swing.JTable;
 import view.ITableDialog;
 import model.IDish;
 import model.IMenu;
-import model.IRestaurant;
 
 /**
  * @author Giacomo Scaparrotti
@@ -26,15 +25,6 @@ public interface IDialogController {
 	 * 
 	 */
 	public void setView(ITableDialog td);
-	
-	/**
-	 * This method is to be called every time you load a {@link IRestaurant} object from a file, e.g. using {@link IMainController#commandLoad()}.
-	 * Since the loading will
-	 * change the references in the MainController class, you have to update the references to those object contained
-	 * in this very class' instance.
-	 * This method may not be useful if the architecture of the program is very different from the current one.
-	 */
-	public void updateReferences();
 
 	/**
 	 * @return An array containing all the {@link IDish} on the menu
