@@ -2,6 +2,7 @@ package viewDialogs;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Arrays;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -19,7 +20,7 @@ public abstract class AbstractBenderJTable extends JTable{
 	public AbstractBenderJTable(final String[] props, final IMainController mainCtrl) {
 		tm = new DefaultTableModel(INIT_DATA, props);
 		this.setModel(tm);		
-		this.PROPS = props.clone(); //copia difensiva
+		this.PROPS = Arrays.copyOf(props, props.length); //copia difensiva
 		this.mainCtrl = mainCtrl;
 		this.addDefaultMouseListener();
 		this.setEnabled(false);
