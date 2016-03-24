@@ -29,7 +29,7 @@ public class Restaurant implements IRestaurant {
             tablesAmount--;
             return tablesAmount;
         } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Il tavolo ha ancora piatti da servire");
         }
     }
 
