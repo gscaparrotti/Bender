@@ -10,7 +10,6 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-
 import view.IRestaurantView;
 import model.Dish;
 import model.IMenu;
@@ -20,7 +19,9 @@ import utilities.CheckNull;
 /**
  *
  */
-public class MainController implements IMainController {
+public final class MainController implements IMainController {
+
+    private static IMainController instance = new MainController();
 
     /**
      * The current directory.
@@ -47,7 +48,14 @@ public class MainController implements IMainController {
      * {@link #setMainViewAndControllers(IRestaurantView, IMainViewController, IDialogController)}
      * methods.
      */
-    public MainController() { } //NOPMD
+    private MainController() { } //NOPMD
+
+    /**
+     * @return The only instance of MainController available in a instance of this program
+     */
+    public static IMainController getInstance() {
+        return instance;
+    }
 
     @Override
     public void setModel(final IRestaurant newModel, final IMenu newMenu) {

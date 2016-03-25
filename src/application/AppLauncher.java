@@ -36,7 +36,7 @@ public final class AppLauncher {
      */
     public static void main(final String... args) {
         final RestaurantView v = new RestaurantView();
-        final IMainController ctrl = new MainController();
+        final IMainController ctrl = MainController.getInstance();
         ctrl.setModel(new Restaurant(), new Menu());
         ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
         setLookAndFeel();

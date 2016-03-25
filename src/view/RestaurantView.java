@@ -69,7 +69,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     /**
      * Creates the view.
      */
- // CHECKSTYLE DISABLE MagicNumber FOR 120 LINES
+    // CHECKSTYLE DISABLE MagicNumber FOR 120 LINES
     public void buildView() {
         // creazione del pannello principale
         final JPanel mainPanel = new JPanel(new BorderLayout());
@@ -198,7 +198,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         final JButton newButton = new JButton(Integer.toString(n));
         newButton.setFont(newButton.getFont().deriveFont(Font.BOLD, 32));
         newButton.setPreferredSize(new Dimension(RestaurantView.SCREEN.width / 10, RestaurantView.SCREEN.height / 10));
-     // CHECKSTYLE DISABLE MagicNumber FOR 1 LINES
+        // CHECKSTYLE DISABLE MagicNumber FOR 1 LINES
         newButton.setBackground(new Color(255, 255, 70));
         newButton.addActionListener(new ActionListener() {
             @Override

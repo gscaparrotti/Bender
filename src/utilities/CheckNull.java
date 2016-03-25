@@ -1,5 +1,7 @@
 package utilities;
 
+import controller.MainController;
+
 /**
  * 
  *         This is an utility class. By now it contains only one method,
@@ -19,7 +21,9 @@ public final class CheckNull {
      */
     public static void checkNull(final Object... obj) {
         for (final Object o : obj) {
-            assert o != null : "Lascia ogni speranza, è andato tutto a puttane";
+            if (o == null) {
+                MainController.getInstance().showIrreversibleErrorOnMainView("NullPointerException: ogni speranza è perduta");
+            }
         }
     }
 
