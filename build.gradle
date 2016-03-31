@@ -7,4 +7,6 @@ repositories {
 }
 dependencies {
 	compile "org.danilopianini:javalib-java7:$javalib7Version"
+	compile "com.miglayout:miglayout:$migLayoutVersion"
+	compile "jgoodies:forms:$formsVersion"
 }
