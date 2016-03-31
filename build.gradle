@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+sourceCompatibility = "$jdkVersion"
+
+repositories {
+	mavenCentral()
+}
+dependencies {
+	compile "org.danilopianini:javalib-java7:$javalib7Version"
+}
