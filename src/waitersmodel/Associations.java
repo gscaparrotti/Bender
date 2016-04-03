@@ -13,16 +13,16 @@ import org.danilopianini.concurrency.FastReadWriteLock;
  * 
  * @param <T> the type which identifies a waiter
  */
-public class NetAssociations<T> implements IAssociations<T> {
+public class Associations<T> implements IAssociations<T> {
 
-    private final Map<Integer, Set<T>> associations = new HashMap<>();
+    private final Map<Integer, Set<T>> associationsMap = new HashMap<>();
     private final FastReadWriteLock lock = new FastReadWriteLock();
 
     @Override
     public void addAssociation(final int table, final T waiter) {
         lock.write();
         try {
-            final Set<T> addresses = associations.getOrDefault(table, new HashSet<>());
+            final Set<T> addresses = associationsMap.getOrDefault(table, new HashSet<>());
             addresses.add(waiter);
         } finally {
             lock.release(); 
@@ -33,7 +33,7 @@ public class NetAssociations<T> implements IAssociations<T> {
     public void deleteAssociation(final int table, final T waiter) {
         lock.write();
         try {
-            final Set<T> addresses = associations.get(table);
+            final Set<T> addresses = associationsMap.get(table);
             if (addresses != null) {
                 addresses.remove(waiter);
             }
@@ -46,7 +46,7 @@ public class NetAssociations<T> implements IAssociations<T> {
     public void deleteAllAssociations(final int table) {
         lock.write();
         try {
-            associations.remove(table);
+            associationsMap.remove(table);
         } finally {
             lock.release();
         }
@@ -56,7 +56,7 @@ public class NetAssociations<T> implements IAssociations<T> {
     public Collection<T> getAssociation(final int table) {
         lock.read();
         try {
-            return associations.getOrDefault(table, new HashSet<T>()); 
+            return associationsMap.getOrDefault(table, new HashSet<T>()); 
         } finally {
             lock.release();
         }

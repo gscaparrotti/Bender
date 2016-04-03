@@ -35,13 +35,17 @@ public final class AppLauncher {
      *            Bender's main method.
      */
     public static void main(final String... args) {
-        final RestaurantView v = new RestaurantView();
         final IMainController ctrl = MainController.getInstance();
-        ctrl.setModel(new Restaurant(), new Menu());
-        ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
-        setLookAndFeel();
-        v.buildView();
-        v.setVisible(true);
+        try {
+            final RestaurantView v = new RestaurantView();
+            ctrl.setModel(new Restaurant(), new Menu());
+            ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
+            setLookAndFeel();
+            v.buildView();
+            v.setVisible(true);
+        } catch (final Exception e) {
+            ctrl.showIrreversibleErrorOnMainView(e.getMessage());
+        }
     }
 
     //CHECKSTYLE:OFF

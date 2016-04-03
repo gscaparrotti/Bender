@@ -123,7 +123,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         final JPanel toBeServedPanel = new JPanel(new BorderLayout());
         final JLabel daServire = new JLabel("<html>Piatti da Servire <br/> <br/> </html>");
         daServire.setHorizontalAlignment(JLabel.CENTER);
-        daServire.setFont(daServire.getFont().deriveFont(Font.BOLD, 18));
+        daServire.setFont(daServire.getFont().deriveFont(Font.BOLD, 24));
         toBeServedPanel.add(daServire, BorderLayout.NORTH);
         toBeServedPanel.add(scrollToBeServed, BorderLayout.CENTER);
         toBeServedPanel.setBackground(new Color(255, 190, 100));
