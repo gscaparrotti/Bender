@@ -8,10 +8,13 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -102,10 +105,29 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         buttonCnst.gridy++;
         buttonPanelInternal.add(iconLabel, buttonCnst);
         buttonCnst.gridy++;
-        final JPanel buttonPanel = new JPanel(new FlowLayout());
+        buttonPanelInternal.setVisible(false);
+        final JPanel buttonPanel = new JPanel(new BorderLayout());
+        final ImageIcon arrowLeft = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_left.png"))
+        		.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        final JLabel iconArrow = new JLabel(arrowLeft);
+        final ImageIcon arrowRight = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_right.png"))
+        		.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+        iconArrow.addMouseListener(new MouseAdapter() {
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		super.mouseClicked(e);
+        		buttonPanelInternal.setVisible(!buttonPanelInternal.isVisible());
+        		if (buttonPanelInternal.isVisible()) {
+        			iconArrow.setIcon(arrowRight);
+        		} else {
+        			iconArrow.setIcon(arrowLeft);
+        		}
+        	}
+		});
         buttonPanelInternal.setBackground(new Color(255, 180, 100));
         buttonPanel.setBackground(new Color(255, 180, 100));
-        buttonPanel.add(buttonPanelInternal);
+        buttonPanel.add(iconArrow, BorderLayout.WEST);
+        buttonPanel.add(buttonPanelInternal, BorderLayout.CENTER);
         // creazione di tablePanel
         initLayout();
         final JScrollPane jsp = new JScrollPane(tablePanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
