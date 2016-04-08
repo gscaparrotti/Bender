@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -108,26 +107,29 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         buttonPanelInternal.setVisible(false);
         final JPanel buttonPanel = new JPanel(new BorderLayout());
         final ImageIcon arrowLeft = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_left.png"))
-        		.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+                .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         final JLabel iconArrow = new JLabel(arrowLeft);
         final ImageIcon arrowRight = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_right.png"))
-        		.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
+                .getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         iconArrow.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseClicked(MouseEvent e) {
-        		super.mouseClicked(e);
-        		buttonPanelInternal.setVisible(!buttonPanelInternal.isVisible());
-        		if (buttonPanelInternal.isVisible()) {
-        			iconArrow.setIcon(arrowRight);
-        		} else {
-        			iconArrow.setIcon(arrowLeft);
-        		}
-        	}
-		});
+            @Override
+            public void mouseClicked(final MouseEvent e) {
+                super.mouseClicked(e);
+                buttonPanelInternal.setVisible(!buttonPanelInternal.isVisible());
+                if (buttonPanelInternal.isVisible()) {
+                    iconArrow.setIcon(arrowRight);
+                } else {
+                    iconArrow.setIcon(arrowLeft);
+                }
+            }
+        });
         buttonPanelInternal.setBackground(new Color(255, 180, 100));
         buttonPanel.setBackground(new Color(255, 180, 100));
         buttonPanel.add(iconArrow, BorderLayout.WEST);
-        buttonPanel.add(buttonPanelInternal, BorderLayout.CENTER);
+        final JPanel innerButtonPanel = new JPanel();
+        innerButtonPanel.add(buttonPanelInternal);
+        innerButtonPanel.setBackground(new Color(255, 180, 100));
+        buttonPanel.add(innerButtonPanel, BorderLayout.CENTER);
         // creazione di tablePanel
         initLayout();
         final JScrollPane jsp = new JScrollPane(tablePanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
