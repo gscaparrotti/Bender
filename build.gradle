@@ -16,4 +16,4 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.12'
 }
 
-defaultTasks 'wrapper', 'clean', 'build', 'check', 'assemble', 'install'
+defaultTasks 'wrapper', 'clean', 'build', 'assemble'

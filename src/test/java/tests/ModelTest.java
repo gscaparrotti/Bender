@@ -1,4 +1,4 @@
-package test;
+package tests;
 
 /*
  * nota per il docente: questa classe di test è stata usata per testare i metodi
