@@ -143,7 +143,7 @@ public final class MainController implements IMainController {
     @Override
     public void showMessageOnMainView(final String message) {
         if (view == null || message == null) {
-            System.out.println(message);
+            System.out.println(message); //NOPMD
         } else {
             view.showApplicationMessage(message);
         }
@@ -152,7 +152,7 @@ public final class MainController implements IMainController {
     @Override
     public void showIrreversibleErrorOnMainView(final String message) {
         if (view == null || message == null) {
-            System.out.println(message);
+            System.out.println(message); //NOPMD
             exit();
         } else {
             view.showIrreversibleError(message);
