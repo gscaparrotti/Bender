@@ -31,7 +31,7 @@ task wrapper(type: Wrapper) {
 findbugs {
 	ignoreFailures = true
 	effort = "default"
-	reportLevel = "low"
+	reportLevel = "medium"
 }
 
 tasks.withType(FindBugs) {
