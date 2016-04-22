@@ -66,7 +66,7 @@ public final class AppLauncher {
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | UnsupportedLookAndFeelException e) {
-            System.out.println("Impossibile inizializzare correttamente il layout.");
+            System.out.println("Impossibile inizializzare correttamente il layout."); //NOPMD
         }
     }
     //CHECKSTYLE:ON

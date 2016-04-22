@@ -1,5 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'maven'
+apply plugin: 'checkstyle'
+apply plugin: 'pmd'
+apply plugin: 'findbugs'
 
 sourceCompatibility = "$jdkVersion"
 
@@ -10,10 +13,65 @@ dependencies {
 	compile "org.danilopianini:javalib-java7:$javalib7Version"
 	compile "com.miglayout:miglayout:$migLayoutVersion"
 	compile "jgoodies:forms:$formsVersion"
+
+    pmd(
+        "net.sourceforge.pmd:pmd-core:$pmdVersion",
+        "net.sourceforge.pmd:pmd-vm:$pmdVersion",
+        "net.sourceforge.pmd:pmd-plsql:$pmdVersion",
+        "net.sourceforge.pmd:pmd-jsp:$pmdVersion",
+        "net.sourceforge.pmd:pmd-xml:$pmdVersion",
+        "net.sourceforge.pmd:pmd-java:$pmdVersion"
+    )
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.12'
+}
+
+findbugs {
+	ignoreFailures = true
+	effort = "default"
+	reportLevel = "low"
+}
+
+tasks.withType(FindBugs) {
+	classes = fileTree('build/classes/main/')
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+checkstyle {
+	ignoreFailures = true
+	configFile = new File("style.xml")
+}
+
+checkstyleMain << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
+checkstyleTest << {
+    ant.xslt(in: reports.xml.destination,
+             style: new File("$project.projectDir/checkstyle-noframes-sorted.xsl"),
+             out: new File(reports.xml.destination.parent, 'main.html'))
+}
+
+pmd {
+	ignoreFailures = true
+	ruleSets = []
+	ruleSetFiles = files("pmd.xml")
+	targetJdk = pmdTargetJdk
+	toolVersion = pmdVersion
+}
+
+tasks.withType(Pmd) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
 }
 
 defaultTasks 'wrapper', 'clean', 'check', 'build', 'assemble'

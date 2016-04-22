@@ -28,6 +28,7 @@ public abstract class AbstractBenderJTable extends JTable {
      * @param newMainCtrl the main controller
      */
     public AbstractBenderJTable(final String[] newProps, final IMainController newMainCtrl) {
+        super();
         tm = new DefaultTableModel(INIT_DATA, newProps);
         this.setModel(tm);
         this.props = Arrays.copyOf(newProps, newProps.length); // copia difensiva
