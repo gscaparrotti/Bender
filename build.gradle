@@ -10,3 +10,7 @@ dependencies {
 	compile "com.miglayout:miglayout:$migLayoutVersion"
 	compile "jgoodies:forms:$formsVersion"
 }
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.12'
+}
