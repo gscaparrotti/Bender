@@ -50,6 +50,7 @@ public class NetworkController extends Thread {
             welcomeSocket.close();
             for (final Socket s : sockets) {
                 s.close();
+                sockets.remove(s);
             }
         } catch (IOException e) {
             mainController.showIrreversibleErrorOnMainView("Impossibile avviare i servizi di rete: " + e.getMessage());
@@ -105,6 +106,7 @@ public class NetworkController extends Thread {
         public void run() {
             super.run();
             try {
+                System.out.println("size: " + sockets.size());
                 while (true) {
                     final String clientInput = input.readLine();
                     if (clientInput != null && clientInput.contains("GET TABLE")) {
@@ -113,6 +115,7 @@ public class NetworkController extends Thread {
                     }
                 }
             } catch (IOException e) {
+                sockets.remove(socket);
                 mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
             }
         }
@@ -144,7 +147,8 @@ public class NetworkController extends Thread {
             try {
                 output.writeObject(mainController.getRestaurant().getOrders(tableNmbr));
             } catch (IOException e) {
-                mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso."
+                sockets.remove(socket);
+                mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso inaspettatamente."
                         + "\nIl client potrebbe non aver ricevuto dei dati.");
             }
         }
