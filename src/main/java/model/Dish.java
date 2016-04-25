@@ -1,6 +1,6 @@
 package model;
 
-import utilities.CheckNull;
+import java.util.Objects;
 
 /**
  *
@@ -27,7 +27,7 @@ public class Dish implements IDish {
      *            Creates a new dish with the given name and price.
      */
     public Dish(final String newName, final double newPrice) {
-        CheckNull.checkNull(newName);
+        Objects.requireNonNull(newName);
         this.name = newName;
         this.price = newPrice;
     }

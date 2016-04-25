@@ -1,12 +1,12 @@
 package controller;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Map.Entry;
 
 import model.IDish;
 import model.IRestaurant;
 import model.Pair;
-import utilities.CheckNull;
 import view.IRestaurantView;
 
 /**
@@ -25,7 +25,7 @@ public class MainViewController implements IMainViewController {
      *            the model provided by the selected {@link IMainController}.
      */
     public MainViewController(final IMainController ctrl) {
-        CheckNull.checkNull(ctrl);
+        Objects.requireNonNull(ctrl);
         this.mainController = ctrl;
     }
 

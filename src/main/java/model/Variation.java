@@ -1,6 +1,6 @@
 package model;
 
-import utilities.CheckNull;
+import java.util.Objects;
 
 /**
  * 
@@ -31,7 +31,8 @@ public class Variation implements IDish {
      *            another {@link IDish}.
      */
     public Variation(final String newVariationName, final double newCost, final IDish newItem) {
-        CheckNull.checkNull(newItem, newVariationName);
+        Objects.requireNonNull(newItem);
+        Objects.requireNonNull(newVariationName);
         this.decoratedDish = newItem;
         this.variationName = newVariationName;
         this.cost = newCost;

@@ -10,11 +10,12 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.Objects;
+
 import view.IRestaurantView;
 import model.Dish;
 import model.IMenu;
 import model.IRestaurant;
-import utilities.CheckNull;
 
 /**
  *
@@ -59,7 +60,8 @@ public final class MainController implements IMainController {
 
     @Override
     public void setModel(final IRestaurant newModel, final IMenu newMenu) {
-        CheckNull.checkNull(newModel, newMenu);
+        Objects.requireNonNull(newModel);
+        Objects.requireNonNull(newMenu);
         this.menu = newMenu;
         this.model = newModel;
         loadMenu();
@@ -68,7 +70,9 @@ public final class MainController implements IMainController {
     @Override
     public void setMainViewAndControllers(final IRestaurantView newView, final IMainViewController viewCtrl,
             final IDialogController dialogCtrl) {
-        CheckNull.checkNull(newView, viewCtrl, dialogCtrl);
+        Objects.requireNonNull(newView);
+        Objects.requireNonNull(viewCtrl);
+        Objects.requireNonNull(dialogCtrl);
         this.dc = dialogCtrl;
         this.mvc = viewCtrl;
         this.view = newView;

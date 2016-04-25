@@ -2,8 +2,7 @@ package model;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-
-import utilities.CheckNull;
+import java.util.Objects;
 
 /**
  *
@@ -18,7 +17,7 @@ public class Menu extends LinkedList<IDish> implements IMenu {
     @Override
     public void addItems(final IDish... items) {
         for (final IDish i : items) {
-            CheckNull.checkNull(i);
+            Objects.requireNonNull(i);
         }
         this.addAll(Arrays.asList(items));
     }

@@ -3,6 +3,7 @@ package controller;
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Map.Entry;
 
 import javax.swing.JTable;
@@ -12,7 +13,6 @@ import model.IDish;
 import model.IMenu;
 import model.IRestaurant;
 import model.Pair;
-import utilities.CheckNull;
 
 /**
  *
@@ -31,7 +31,7 @@ public class DialogController implements IDialogController {
      *            {@link IMenu} and the {@link IRestaurant}.
      */
     public DialogController(final IMainController newCtrl) {
-        CheckNull.checkNull(newCtrl);
+        Objects.requireNonNull(newCtrl);
         this.ctrl = newCtrl;
     }
 
@@ -74,7 +74,7 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandAdd(final int tableNumber, final IDish item, final int amount) {
-        CheckNull.checkNull(item);
+        Objects.requireNonNull(item);
         try {
             ctrl.getRestaurant().addOrder(tableNumber, item, amount);
             tableDialog.clearErrors();
@@ -91,7 +91,7 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandRemove(final int tableNumber, final IDish item, final int amount) {
-        CheckNull.checkNull(item);
+        Objects.requireNonNull(item);
         try {
             ctrl.getRestaurant().removeOrder(tableNumber, item, amount);
             tableDialog.clearErrors();
@@ -109,7 +109,7 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandUpdateProcessedOrders(final int tableNumber, final IDish item) {
-        CheckNull.checkNull(item);
+        Objects.requireNonNull(item);
         try {
             ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
         } catch (Exception e) {
@@ -126,7 +126,7 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandPrint(final int tableNumber, final JTable c, final String up, final String down) {
-        CheckNull.checkNull(c);
+        Objects.requireNonNull(c);
         if (verifyRemaining(tableNumber)) {
             tableDialog
                     .showMessage("Attenzione: si sta per stampare il conto di un tavolo con ordini non ancora evasi.");
@@ -186,7 +186,7 @@ public class DialogController implements IDialogController {
     }
 
     private void commandErrorUpdate(final Exception e) {
-        CheckNull.checkNull(e);
+        Objects.requireNonNull(e);
         tableDialog.showError(e);
     }
 

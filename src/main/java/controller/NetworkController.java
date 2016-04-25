@@ -84,7 +84,7 @@ public class NetworkController extends Thread {
     }
 
 
-    private final class NetClientListener extends Thread {
+    private class NetClientListener extends Thread {
 
         private final Socket socket;
         private BufferedReader input;
@@ -106,10 +106,9 @@ public class NetworkController extends Thread {
         public void run() {
             super.run();
             try {
-                System.out.println("size: " + sockets.size());
                 while (true) {
                     final String clientInput = input.readLine();
-                    if (clientInput != null && clientInput.contains("GET TABLE")) {
+                    if (clientInput != null && clientInput.startsWith("GET TABLE")) {
                         final int tableNmbr = Integer.parseInt(clientInput.substring("GET TABLE".length() + 1));
                         new NetClientSender(socket, tableNmbr).start();
                     }
@@ -117,6 +116,9 @@ public class NetworkController extends Thread {
             } catch (IOException e) {
                 sockets.remove(socket);
                 mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
+            } catch (NumberFormatException i) {
+                mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
+                        + "di un tavolo non valido.");
             }
         }
     }

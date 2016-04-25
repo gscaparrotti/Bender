@@ -16,6 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Objects;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -28,7 +29,6 @@ import javax.swing.JScrollPane;
 
 import controller.IMainController;
 import controller.IMainViewController;
-import utilities.CheckNull;
 import viewdialogs.MainViewJTable;
 
 /**
@@ -63,7 +63,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
 
     @Override
     public void setControllers(final IMainController controller, final IMainViewController viewController) {
-        CheckNull.checkNull(controller, viewController);
+        Objects.requireNonNull(controller);
+        Objects.requireNonNull(viewController);
         this.ctrl = controller;
         this.viewCtrl = viewController;
     }
@@ -252,14 +253,14 @@ public class RestaurantView extends JFrame implements IRestaurantView {
 
     @Override
     public void showApplicationMessage(final String message) {
-        CheckNull.checkNull(message);
+        Objects.requireNonNull(message);
         JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
     public void showIrreversibleError(final String message) {
-        CheckNull.checkNull(message);
+        Objects.requireNonNull(message);
         JOptionPane.showMessageDialog(this,
                 "Si è verificato un errore irreversibile: ".concat(message).concat(". L'applicazione verrà chiusa"),
                 "Errore Fatale", JOptionPane.ERROR_MESSAGE);
