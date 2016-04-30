@@ -111,6 +111,8 @@ public class NetworkController extends Thread {
                     if (clientInput != null && clientInput.startsWith("GET TABLE")) {
                         final int tableNmbr = Integer.parseInt(clientInput.substring("GET TABLE".length() + 1));
                         new NetClientSender(socket, tableNmbr).start();
+                    } else if (clientInput == null) {
+                        break;
                     }
                 }
             } catch (IOException e) {
