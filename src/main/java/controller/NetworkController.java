@@ -1,8 +1,7 @@
 package controller;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -87,7 +86,7 @@ public class NetworkController extends Thread {
     private class NetClientListener extends Thread {
 
         private final Socket socket;
-        private BufferedReader input;
+        private ObjectInputStream input;
 
         NetClientListener(final Socket socket) {
             super();
@@ -96,7 +95,7 @@ public class NetworkController extends Thread {
             }
             this.socket = socket;
             try {
-                this.input = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+                this.input = new ObjectInputStream(socket.getInputStream());
             } catch (IOException e) {
                 mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'inputStream: " + e.getMessage());
             }
@@ -106,13 +105,16 @@ public class NetworkController extends Thread {
         public void run() {
             super.run();
             try {
-                while (true) {
-                    final String clientInput = input.readLine();
-                    if (clientInput != null && clientInput.startsWith("GET TABLE")) {
-                        final int tableNmbr = Integer.parseInt(clientInput.substring("GET TABLE".length() + 1));
-                        new NetClientSender(socket, tableNmbr).start();
-                    } else if (clientInput == null) {
-                        break;
+                final Object clientInput = input.readObject();
+                if (clientInput != null) {
+                    if (clientInput instanceof String) {
+                        final String stringInput = (String) clientInput;
+                        if (stringInput.startsWith("GET TABLE")) {
+                            final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
+                            new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
+                        } else if (stringInput.equals("GET AMOUNT")) {
+                            new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -121,6 +123,8 @@ public class NetworkController extends Thread {
             } catch (NumberFormatException i) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
                         + "di un tavolo non valido.");
+            } catch (ClassNotFoundException e) {
+                mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
             }
         }
     }
@@ -129,15 +133,15 @@ public class NetworkController extends Thread {
 
         private final Socket socket;
         private ObjectOutputStream output;
-        private final int tableNmbr;
+        private final Object toSend;
 
-        NetClientSender(final Socket socket, final int tableNmbr) {
+        NetClientSender(final Socket socket, final Object toSend) {
             super();
-            if (socket == null || tableNmbr < 0) {
+            if (socket == null || toSend == null) {
                 throw new IllegalArgumentException();
             }
             this.socket = socket;
-            this.tableNmbr = tableNmbr;
+            this.toSend = toSend;
             try {
                 this.output = new ObjectOutputStream(socket.getOutputStream());
             } catch (IOException e) {
@@ -149,7 +153,9 @@ public class NetworkController extends Thread {
         public void run() {
             super.run();
             try {
-                output.writeObject(mainController.getRestaurant().getOrders(tableNmbr));
+                output.writeObject(toSend);
+                output.close();
+                sockets.remove(socket);
             } catch (IOException e) {
                 sockets.remove(socket);
                 mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso inaspettatamente."
