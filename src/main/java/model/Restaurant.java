@@ -4,6 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.danilopianini.concurrency.FastReadWriteLock;
+
+import com.google.common.collect.MapMaker;
+
 /**
  *
  */
@@ -13,22 +17,28 @@ public class Restaurant implements IRestaurant {
      * 
      */
     private static final long serialVersionUID = 6813103235280390095L;
-    private final Map<Integer, Map<IDish, Pair<Integer, Integer>>> tables = new HashMap<>();
+    private final Map<Integer, Map<IDish, Pair<Integer, Integer>>> tables = new MapMaker().makeMap();
+    private final transient FastReadWriteLock lock = new FastReadWriteLock();
     private int tablesAmount;
     private static final String ERROR_MESSAGE = "Dati inseriti non corretti. Controllare.";
 
     @Override
     public int addTable() {
+        lock.write();
         this.tablesAmount++;
+        lock.release();
         return this.tablesAmount;
     }
 
     @Override
     public int removeTable() {
+        lock.write();
         if (tablesAmount > 0 && !tables.containsKey(tablesAmount)) {
             tablesAmount--;
+            lock.release();
             return tablesAmount;
         } else {
+            lock.release();
             throw new IllegalStateException("Il tavolo ha ancora piatti da servire");
         }
     }
