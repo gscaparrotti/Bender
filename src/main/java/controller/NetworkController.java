@@ -7,8 +7,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
-
 import model.IRestaurant;
+import model.Order;
 
 /**
  * This class provides a mean to trasmit datas from this application to a remote destination.
@@ -114,6 +114,18 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
                         } else if (stringInput.equals("GET AMOUNT")) {
                             new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                        }
+                    } else if (clientInput instanceof Order) {
+                        final Order orderInput = (Order) clientInput;
+                        if (orderInput.getAmounts().getY() == 0) {
+                            mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
+                            new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
+                        } else {
+                            mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
+                            mainController.getDialogController().commandOrdersViewUpdate(orderInput.getTable());
+                            mainController.getMainViewController().updateUnprocessedOrders();
+                            mainController.autoSave();
+                            new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                         }
                     }
                 }
