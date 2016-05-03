@@ -30,6 +30,11 @@ public interface IDialogController {
     void setView(ITableDialog td);
 
     /**
+     * Removes a previously associated view. If there is no view, then nothing happens.
+     */
+    void detachView();
+
+    /**
      * @return An array containing all the {@link IDish} on the menu
      * 
      *         This method provides an easy way to get all the dishes on the

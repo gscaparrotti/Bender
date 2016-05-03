@@ -35,6 +35,19 @@ public class DialogController implements IDialogController {
         this.ctrl = newCtrl;
     }
 
+    @Override
+    public void setView(final ITableDialog td) {
+        if (td != null) {
+            this.tableDialog = td;
+            td.setControllerAndBuildView(this);
+        }
+    }
+
+    @Override
+    public void detachView() {
+        this.tableDialog = null;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -52,19 +65,21 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandOrdersViewUpdate(final int tableNumber) {
-        final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                .iterator();
-        double bill = 0;
-        double effectiveBill = 0;
-        tableDialog.clearTab();
-        while (i.hasNext()) {
-            final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
-            tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
-                    entry.getValue().getY());
-            bill += entry.getKey().getPrice() * entry.getValue().getX();
-            effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
+                    .iterator();
+            double bill = 0;
+            double effectiveBill = 0;
+            tableDialog.clearTab();
+            while (i.hasNext()) {
+                final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
+                tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
+                        entry.getValue().getY());
+                bill += entry.getKey().getPrice() * entry.getValue().getX();
+                effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+            }
+            tableDialog.billUpdate(bill, effectiveBill);
         }
-        tableDialog.billUpdate(bill, effectiveBill);
     }
 
     /*
@@ -75,13 +90,15 @@ public class DialogController implements IDialogController {
     @Override
     public void commandAdd(final int tableNumber, final IDish item, final int amount) {
         Objects.requireNonNull(item);
-        try {
-            ctrl.getRestaurant().addOrder(tableNumber, item, amount);
-            tableDialog.clearErrors();
-        } catch (Exception e) {
-            commandErrorUpdate(e);
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            try {
+                ctrl.getRestaurant().addOrder(tableNumber, item, amount);
+                tableDialog.clearErrors();
+            } catch (Exception e) {
+                commandErrorUpdate(e);
+            }
+            updateStatus(tableNumber);
         }
-        updateStatus(tableNumber);
     }
 
     /*
@@ -92,13 +109,15 @@ public class DialogController implements IDialogController {
     @Override
     public void commandRemove(final int tableNumber, final IDish item, final int amount) {
         Objects.requireNonNull(item);
-        try {
-            ctrl.getRestaurant().removeOrder(tableNumber, item, amount);
-            tableDialog.clearErrors();
-        } catch (Exception e) {
-            commandErrorUpdate(e);
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            try {
+                ctrl.getRestaurant().removeOrder(tableNumber, item, amount);
+                tableDialog.clearErrors();
+            } catch (Exception e) {
+                commandErrorUpdate(e);
+            }
+            updateStatus(tableNumber);
         }
-        updateStatus(tableNumber);
     }
 
     /*
@@ -110,12 +129,14 @@ public class DialogController implements IDialogController {
     @Override
     public void commandUpdateProcessedOrders(final int tableNumber, final IDish item) {
         Objects.requireNonNull(item);
-        try {
-            ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
-        } catch (Exception e) {
-            commandErrorUpdate(e);
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            try {
+                ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
+            } catch (Exception e) {
+                commandErrorUpdate(e);
+            }
+            updateStatus(tableNumber);
         }
-        updateStatus(tableNumber);
     }
 
     /*
@@ -127,11 +148,13 @@ public class DialogController implements IDialogController {
     @Override
     public void commandPrint(final int tableNumber, final JTable c, final String up, final String down) {
         Objects.requireNonNull(c);
-        if (verifyRemaining(tableNumber)) {
-            tableDialog
-                    .showMessage("Attenzione: si sta per stampare il conto di un tavolo con ordini non ancora evasi.");
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            if (verifyRemaining(tableNumber)) {
+                tableDialog
+                        .showMessage("Attenzione: si sta per stampare il conto di un tavolo con ordini non ancora evasi.");
+            }
+            printBillFromJTable(c, up, down);
         }
-        printBillFromJTable(c, up, down);
     }
 
     /*
@@ -141,15 +164,9 @@ public class DialogController implements IDialogController {
      */
     @Override
     public void commandReset(final int tableNumber) {
-        ctrl.getRestaurant().resetTable(tableNumber);
-        updateStatus(tableNumber);
-    }
-
-    @Override
-    public void setView(final ITableDialog td) {
-        if (td != null) {
-            this.tableDialog = td;
-            td.setControllerAndBuildView(this);
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            ctrl.getRestaurant().resetTable(tableNumber);
+            updateStatus(tableNumber);
         }
     }
 

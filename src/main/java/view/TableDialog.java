@@ -175,6 +175,7 @@ public class TableDialog extends JDialog implements ITableDialog {
 
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(final WindowEvent e) {
+                ctrl.detachView();
                 dispose();
             }
         });
@@ -183,6 +184,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         btnAnnulla.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
+                ctrl.detachView();
                 dispose();
             }
         });
@@ -262,6 +264,11 @@ public class TableDialog extends JDialog implements ITableDialog {
     public void showMessage(final String message) {
         JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    @Override
+    public int getTable() {
+        return this.tableNumber;
     }
 
 }
