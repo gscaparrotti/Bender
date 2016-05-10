@@ -94,42 +94,48 @@ public class NetworkController extends Thread {
                 throw new IllegalArgumentException();
             }
             this.socket = socket;
-            try {
-                this.input = new ObjectInputStream(socket.getInputStream());
-            } catch (IOException e) {
-                mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'inputStream: " + e.getMessage());
-            }
         }
 
         @Override
         public void run() {
             super.run();
             try {
-                final Object clientInput = input.readObject();
-                if (clientInput != null) {
-                    if (clientInput instanceof String) {
-                        final String stringInput = (String) clientInput;
-                        if (stringInput.startsWith("GET TABLE")) {
-                            final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
-                            new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
-                        } else if (stringInput.equals("GET AMOUNT")) {
-                            new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                while (true) {
+//                    System.out.println("SOCKETS: " + sockets.size());
+//                    for (Socket s : sockets) {
+//                        System.out.println(s.toString());
+//                    }
+                    this.input = new ObjectInputStream(socket.getInputStream());
+                    final Object clientInput = input.readObject();
+                    if (clientInput != null) {
+                        if (clientInput instanceof String) {
+                            final String stringInput = (String) clientInput;
+                            if (stringInput.startsWith("GET TABLE")) {
+                                final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
+                                new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
+                            } else if (stringInput.equals("GET AMOUNT")) {
+                                new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                            } else if (stringInput.equals("CLOSE CONNECTION")) {
+                                new NetClientSender(socket, "CLOSE CONNECTION").start();
+                                break;
+                            }
+                        } else if (clientInput instanceof Order) {
+                            final Order orderInput = (Order) clientInput;
+                            if (orderInput.getAmounts().getY() == 0) {
+                                mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
+                                new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
+                            } else {
+                                mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
+                                mainController.getDialogController().commandOrdersViewUpdate(orderInput.getTable());
+                                mainController.getMainViewController().updateUnprocessedOrders();
+                                mainController.autoSave();
+                                new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
+                            }
                         }
-                    } else if (clientInput instanceof Order) {
-                        final Order orderInput = (Order) clientInput;
-                        if (orderInput.getAmounts().getY() == 0) {
-                            mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
-                            new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
-                        } else {
-                            mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
-                            mainController.getDialogController().commandOrdersViewUpdate(orderInput.getTable());
-                            mainController.getMainViewController().updateUnprocessedOrders();
-                            mainController.autoSave();
-                            new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
-                        }
-                    }
+                    } 
                 }
             } catch (IOException e) {
+                e.printStackTrace();
                 sockets.remove(socket);
                 mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
             } catch (NumberFormatException i) {
@@ -166,8 +172,11 @@ public class NetworkController extends Thread {
             super.run();
             try {
                 output.writeObject(toSend);
-                output.close();
-                sockets.remove(socket);
+                if (toSend instanceof String && ((String) (toSend)).equals("CLOSE CONNECTION")) {
+                    output.close();
+                    sockets.remove(socket);
+//                    System.out.println("SOCKETS: " + sockets.size());
+                }
             } catch (IOException e) {
                 sockets.remove(socket);
                 mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso inaspettatamente."
