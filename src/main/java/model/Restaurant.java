@@ -1,5 +1,6 @@
 package model;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -18,9 +19,14 @@ public class Restaurant implements IRestaurant {
      */
     private static final long serialVersionUID = 6813103235280390095L;
     private final Map<Integer, Map<IDish, Pair<Integer, Integer>>> tables = new MapMaker().makeMap();
-    private final transient FastReadWriteLock lock = new FastReadWriteLock();
+    private transient FastReadWriteLock lock = new FastReadWriteLock();
     private int tablesAmount;
     private static final String ERROR_MESSAGE = "Dati inseriti non corretti. Controllare.";
+
+    private void readObject(final java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        lock = new FastReadWriteLock();
+    }
 
     @Override
     public int addTable() {
