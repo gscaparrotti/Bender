@@ -3,8 +3,10 @@ package controller;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 import model.IRestaurant;
@@ -20,6 +22,17 @@ public class NetworkController extends Thread {
     private boolean listen = true;
     private final Set<Socket> sockets = new HashSet<>();
     private final IMainController mainController;
+
+    /**
+     * @return the current local IPv4 address of this machine.
+     */
+    public static String getCurrentIP() {
+        try {
+            return "IP: " + Inet4Address.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "(IP Non Disponibile)";
+        }
+    }
 
     /**
      * @param mainCtrl The main controller which will provide references to all the needed resources (eg: 
@@ -115,6 +128,8 @@ public class NetworkController extends Thread {
                                 new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
                             } else if (stringInput.equals("GET AMOUNT")) {
                                 new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                            } else if (stringInput.equals("GET MENU")) {
+                                new NetClientSender(socket, mainController.getMenu()).start();
                             } else if (stringInput.equals("CLOSE CONNECTION")) {
                                 new NetClientSender(socket, "CLOSE CONNECTION").start();
                                 break;

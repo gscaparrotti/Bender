@@ -26,9 +26,11 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 
 import controller.IMainController;
 import controller.IMainViewController;
+import controller.NetworkController;
 import viewdialogs.MainViewJTable;
 
 /**
@@ -105,6 +107,15 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         buttonCnst.gridy++;
         buttonPanelInternal.add(iconLabel, buttonCnst);
         buttonCnst.gridy++;
+        final JSeparator separator = new JSeparator();
+        separator.setBackground(Color.BLACK);
+        separator.setForeground(Color.BLACK);
+        separator.setOpaque(true);
+        buttonPanelInternal.add(separator, buttonCnst);
+        buttonCnst.gridy++;
+        final JLabel ip = new JLabel(NetworkController.getCurrentIP(), JLabel.CENTER);
+        ip.setFont(ip.getFont().deriveFont(Font.BOLD, 16));
+        buttonPanelInternal.add(ip, buttonCnst);
         buttonPanelInternal.setVisible(false);
         final JPanel buttonPanel = new JPanel(new BorderLayout());
         final ImageIcon arrowLeft = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_left.png"))
