@@ -3,10 +3,12 @@ package controller;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.SocketException;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import model.IRestaurant;
@@ -28,8 +30,21 @@ public class NetworkController extends Thread {
      */
     public static String getCurrentIP() {
         try {
-            return "IP: " + Inet4Address.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
+            String ips = "<html>";
+            Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
+            while (e.hasMoreElements()) {
+                NetworkInterface n = e.nextElement();
+                Enumeration<InetAddress> ee = n.getInetAddresses();
+                while (ee.hasMoreElements()) {
+                    InetAddress i = ee.nextElement();
+                    if (i.getHostAddress().startsWith("192.168") || i.getHostAddress().startsWith("10.0")) {
+                        ips = ips.concat(i.getHostAddress() + "<br/>");
+                    }
+                }
+            }
+            ips += "</html>";
+            return ips;
+        } catch (SocketException e) {
             return "(IP Non Disponibile)";
         }
     }
@@ -130,6 +145,11 @@ public class NetworkController extends Thread {
                                 new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
                             } else if (stringInput.equals("GET MENU")) {
                                 new NetClientSender(socket, mainController.getMenu()).start();
+                            } else if (stringInput.startsWith("RESET TABLE")) {
+                                final int tableNmbr = Integer.parseInt(stringInput.substring("RESET TABLE".length() + 1));
+                                mainController.getRestaurant().resetTable(tableNmbr);
+                                updateFinished(tableNmbr);
+                                new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
                             } else if (stringInput.equals("CLOSE CONNECTION")) {
                                 new NetClientSender(socket, "CLOSE CONNECTION").start();
                                 break;
@@ -141,11 +161,9 @@ public class NetworkController extends Thread {
                                 new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
                             } else {
                                 mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
-                                mainController.getDialogController().commandOrdersViewUpdate(orderInput.getTable());
-                                mainController.getMainViewController().updateUnprocessedOrders();
-                                mainController.autoSave();
                                 new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                             }
+                            updateFinished(orderInput.getTable());
                         }
                     } 
                 }
@@ -160,6 +178,12 @@ public class NetworkController extends Thread {
                 mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
             }
         }
+    }
+
+    private void updateFinished(final int tableNumber) {
+        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
+        mainController.getMainViewController().updateUnprocessedOrders();
+        mainController.autoSave();
     }
 
     private final class NetClientSender extends Thread {
