@@ -35,7 +35,7 @@ public final class AppLauncher {
      *
      *            Bender's main method.
      */
-    public static void main(final String... args) {
+    public static void main(final String[] args) {
         final IMainController ctrl = MainController.getInstance();
         try {
             final RestaurantView v = new RestaurantView();
