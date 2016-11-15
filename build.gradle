@@ -8,8 +8,10 @@ sourceCompatibility = "$jdkVersion"
 
 repositories {
 	mavenCentral()
+	maven { url "https://jitpack.io" }
 }
 dependencies {
+	compile 'com.github.gscaparrotti:BenderModel:1b962e0718'
 	compile "org.danilopianini:javalib-java7:$javalib7Version"
 	compile "com.miglayout:miglayout:$migLayoutVersion"
 	compile "jgoodies:forms:$formsVersion"
@@ -25,7 +27,7 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.12'
+    gradleVersion = '3.2'
 }
 
 findbugs {
