@@ -76,6 +76,6 @@ public abstract class AbstractBenderJTable extends JTable {
      * @param button the pressed mouse button
      * @param rowIndex the row which has been clicked
      */
-    protected abstract void specificMouseListener(final int button, final int rowIndex);
+    protected abstract void specificMouseListener(int button, int rowIndex);
 
 }

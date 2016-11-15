@@ -55,6 +55,6 @@ public interface IRestaurantView {
      * 
      *            Adds a new unprocessed order.
      */
-    void addUnprocessedOrder(final String name, final int table, final int quantity);
+    void addUnprocessedOrder(String name, int table, int quantity);
 
 }
