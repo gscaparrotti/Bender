@@ -11,7 +11,7 @@ repositories {
 	maven { url "https://jitpack.io" }
 }
 dependencies {
-	compile 'com.github.gscaparrotti:BenderModel:1b962e0718'
+	compile 'com.github.gscaparrotti:BenderModel:f6e242bd07'
 	compile "org.danilopianini:javalib-java7:$javalib7Version"
 	compile "com.miglayout:miglayout:$migLayoutVersion"
 	compile "jgoodies:forms:$formsVersion"
