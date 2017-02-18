@@ -87,7 +87,7 @@ public class NetworkController extends Thread {
                 sockets.remove(s);
             }
         } catch (IOException e) {
-            mainController.showIrreversibleErrorOnMainView("Impossibile avviare i servizi di rete: " + e.getMessage());
+            mainController.showMessageOnMainView("Impossibile avviare i servizi di rete: " + e.getMessage());
         }
     }
 
@@ -127,8 +127,9 @@ public class NetworkController extends Thread {
             super();
             if (socket == null) {
                 throw new IllegalArgumentException();
+            } else {
+                this.socket = socket;
             }
-            this.socket = socket;
         }
 
         @Override
@@ -181,16 +182,36 @@ public class NetworkController extends Thread {
                         }
                         updateFinished(orderInput.getTable());
                     }
+                } else {
+                    socket.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                try {
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+                }
                 sockets.remove(socket);
                 //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
             } catch (NumberFormatException i) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
                         + "di un tavolo non valido.");
+                try {
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+                }
             } catch (ClassNotFoundException e) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
+                try {
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+                }
             }
         }
     }
@@ -217,7 +238,7 @@ public class NetworkController extends Thread {
             try {
                 this.output = new ObjectOutputStream(socket.getOutputStream());
             } catch (IOException e) {
-                mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'outputStream: " + e.getMessage());
+                mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'outputStream: " + e.toString());
             }
         }
 
@@ -227,11 +248,17 @@ public class NetworkController extends Thread {
             try {
                 output.writeObject(toSend);
                 output.close();
+                socket.close();
                 sockets.remove(socket);
             } catch (IOException e) {
+                try {
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+                }
                 sockets.remove(socket);
-                mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso inaspettatamente."
-                        + "\nIl client potrebbe non aver ricevuto dei dati.");
+                mainController.showMessageOnMainView("Errore di rete: " + socket + e.toString());
             }
         }
     }
