@@ -65,6 +65,10 @@ public class NetworkController extends Thread {
         this.port = port;
         if (mainCtrl != null) {
             this.mainController = mainCtrl;
+            if (mainCtrl.getNetworkController() != null) {
+                throw new IllegalStateException("You are trying to have more than one network controller at once");
+            }
+            mainCtrl.setNetworkController(this);
         } else {
             throw new IllegalArgumentException();
         }
@@ -87,7 +91,7 @@ public class NetworkController extends Thread {
                 sockets.remove(s);
             }
         } catch (IOException e) {
-            mainController.showMessageOnMainView("Impossibile avviare i servizi di rete: " + e.getMessage());
+            mainController.showMessageOnMainView("Errore nei servizi di rete: " + e.getMessage());
         }
     }
 

@@ -41,6 +41,7 @@ public final class MainController implements IMainController {
     private IRestaurantView view;
     private IDialogController dc;
     private IMainViewController mvc;
+    private NetworkController net = null;
 
     /**
      * Creates a new empty {@link MainController}. Before you can use it, you
@@ -175,6 +176,16 @@ public final class MainController implements IMainController {
 
     private void exit() {
         System.exit(0);
+    }
+
+    public NetworkController getNetworkController() {
+        return net;
+    }
+
+    public void setNetworkController(final NetworkController net) {
+        if (net != null) {
+            this.net = net;
+        }
     }
 
 }

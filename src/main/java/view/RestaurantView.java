@@ -30,6 +30,7 @@ import javax.swing.JSeparator;
 
 import controller.IMainController;
 import controller.IMainViewController;
+import controller.MainController;
 import controller.NetworkController;
 import viewdialogs.MainViewJTable;
 
@@ -305,6 +306,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     }
 
     private void exit() {
+        MainController.getInstance().getNetworkController().stopListening();
         System.exit(0);
     }
 
