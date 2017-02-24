@@ -12,6 +12,7 @@ import java.awt.Font;
 import javax.swing.JComboBox;
 
 import model.IDish;
+import model.Dish;
 
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -21,10 +22,13 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.JSpinner;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import controller.IDialogController;
 import controller.IMainController;
@@ -51,6 +55,7 @@ public class TableDialog extends JDialog implements ITableDialog {
     private final JLabel lblContoTotale = new JLabel(BILL_TEXT);
     private final DialogJTable orders;
     private final int tableNumber;
+    private boolean isManual = false;
     private IDialogController ctrl;
     private final IMainController mainCtrl; // NOPMD
 
@@ -118,19 +123,59 @@ public class TableDialog extends JDialog implements ITableDialog {
         final JComboBox<IDish> comboBox = new JComboBox<>(ctrl.getMenu()); // ctrl.getMenu()
         final JSpinner spinner = new JSpinner();
         spinner.setValue(1);
-        panel1.setLayout(new MigLayout(null, "[75%|15%|10%]", null));
+        panel1.setLayout(new MigLayout(null, "[60%|20%|2%|9%|9%]", null));
         panel1.add(comboBox, "cell 0 0,growx,aligny top");
         panel1.add(spinner, "flowx,cell 1 0,growx,aligny center");
 
         final JButton btnOk = new JButton("AGGIUNGI");
-        panel1.add(btnOk, "cell 2 0,alignx right");
+        final JButton manual = new JButton("Ins. Manuale");
+        final JTextField nomeManual = new JTextField("Nome del piatto");
+        final JTextField prezzoManual = new JTextField("0.00", 4);
+        final JTextArea euro = new JTextArea("€");
+        euro.setBackground(TableDialog.this.getBackground());
+        euro.setBorder(BorderFactory.createEmptyBorder());
+        euro.setEnabled(false);
+        panel1.add(btnOk, "cell 3 0,alignx right");
+        panel1.add(manual, "cell 4 0,alignx right");
         btnOk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                ctrl.commandAdd(tableNumber, (IDish) comboBox.getSelectedItem(), (Integer) spinner.getValue());
+                if (isManual) {
+                    try {
+                        double price = Double.parseDouble(prezzoManual.getText());
+                        ctrl.commandAdd(tableNumber, new Dish(nomeManual.getText(), price), 1);
+                    } catch (final NumberFormatException ex) {
+                        mainCtrl.showMessageOnMainView("Prezzo inserito non valido. Controllare.");
+                    }
+                } else {
+                    ctrl.commandAdd(tableNumber, (IDish) comboBox.getSelectedItem(), (Integer) spinner.getValue());   
+                }
             }
         });
-
+        manual.addActionListener(new ActionListener() {          
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isManual) {
+                    panel1.remove(nomeManual);
+                    panel1.remove(prezzoManual);
+                    panel1.remove(euro);
+                    panel1.add(comboBox, "cell 0 0,growx,aligny top");
+                    panel1.add(spinner, "cell 1 0,growx,aligny top");
+                    manual.setText("Ins. Manuale");
+                    isManual = false;
+                } else {
+                    panel1.remove(comboBox);
+                    panel1.remove(spinner);
+                    panel1.add(nomeManual, "cell 0 0,growx,aligny top");
+                    panel1.add(prezzoManual, "cell 1 0,growx,aligny top"); 
+                    panel1.add(euro, "cell 2 0");
+                    manual.setText("Ins. da Menu");
+                    isManual = true;
+                }
+                panel1.revalidate();
+                panel1.repaint();
+            }
+        });
         final JLabel lblPiattiAttualmenteOrdinati = new JLabel("PIATTI ATTUALMENTE ORDINATI");
         final GridBagConstraints gbcLblPiattiAttualmenteOrdinati = new GridBagConstraints();
         gbcLblPiattiAttualmenteOrdinati.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);

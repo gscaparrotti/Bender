@@ -28,8 +28,9 @@ public class MainViewJTable extends AbstractBenderJTable {
     @Override
     public void specificMouseListener(final int button, final int rowIndex) {
         final String name = (String) tm.getValueAt(rowIndex, this.getColumn("Piatto").getModelIndex());
-        Double cost = null;
-        for (final IDish i : mainCtrl.getMenu().getDishesArray()) {
+        final int table = (int) this.getValueAt(rowIndex, this.getColumn("Tavolo").getModelIndex());
+        double cost = 0;
+        for (final IDish i : mainCtrl.getRestaurant().getOrders(table).keySet()) {
             if (i.getName().equals(name)) {
                 cost = i.getPrice();
             }
@@ -37,11 +38,10 @@ public class MainViewJTable extends AbstractBenderJTable {
         final IDish item = new Dish(name, cost);
         if (button == MouseEvent.BUTTON1) {
             try {
-                mainCtrl.getRestaurant().setOrderAsProcessed(
-                        (int) this.getValueAt(rowIndex, this.getColumn("Tavolo").getModelIndex()), item);
+                mainCtrl.getRestaurant().setOrderAsProcessed(table, item);
                 mainCtrl.getMainViewController().updateUnprocessedOrders();
                 mainCtrl.autoSave();
-            } catch (Exception exc) {
+            } catch (final Exception exc) {
                 mainCtrl.showMessageOnMainView(exc.getMessage());
             }
         }
