@@ -9,11 +9,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import model.IDish;
 import model.IRestaurant;
@@ -28,7 +28,7 @@ public class NetworkController extends Thread {
 
     private final int port;
     private boolean listen = true;
-    private final Set<Socket> sockets = new HashSet<>();
+    private final Set<Socket> sockets = ConcurrentHashMap.newKeySet();
     private final IMainController mainController;
 
     /**
@@ -71,6 +71,14 @@ public class NetworkController extends Thread {
             mainCtrl.setNetworkController(this);
         } else {
             throw new IllegalArgumentException();
+        }
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        for (final Socket s : sockets) {
+            s.close();
         }
     }
 
@@ -169,6 +177,8 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
                             new NetClientSender(socket, "CLOSE CONNECTION").start();
+                        } else {
+                            socket.close();
                         }
                     } else if (clientInput instanceof Order) {
                         final Order orderInput = (Order) clientInput;
@@ -176,47 +186,47 @@ public class NetworkController extends Thread {
                             mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
                             new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
                         } else if (orderInput.getAmounts().getX() < 0) {
-                            if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish())) {
+                            if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish()) &&
+                                    orderInput.getAmounts().getY() <= mainController.getRestaurant().getOrders(orderInput.getTable()).get(orderInput.getDish()).getX()) {
                                 mainController.getRestaurant().removeOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getY());
-                                new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                             }
+                            new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                         } else {
                             mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
                             new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                         }
                         updateFinished(orderInput.getTable());
+                    } else {
+                        socket.close();
                     }
                 } else {
                     socket.close();
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
-                try {
-                    socket.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
-                }
-                sockets.remove(socket);
-                //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
-            } catch (NumberFormatException i) {
+                closeOnError();
+            } catch (final NumberFormatException e1) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
                         + "di un tavolo non valido.");
-                try {
-                    socket.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
-                }
-            } catch (ClassNotFoundException e) {
+                closeOnError();
+            } catch (final ClassNotFoundException e2) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
-                try {
-                    socket.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
-                }
+                closeOnError();
+            } catch (final Exception e3) {
+                e3.printStackTrace();
+                closeOnError();
             }
+        }
+        
+        private void closeOnError() {
+            try {
+                socket.close();
+            } catch (final IOException e) {
+                e.printStackTrace();
+                mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
+            }
+            sockets.remove(socket);
+            //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
         }
     }
 
@@ -253,16 +263,16 @@ public class NetworkController extends Thread {
                 output.writeObject(toSend);
                 output.close();
                 socket.close();
-                sockets.remove(socket);
-            } catch (IOException e) {
+            } catch (final Exception e) {
                 try {
                     socket.close();
-                } catch (IOException e1) {
+                } catch (final IOException e1) {
                     e1.printStackTrace();
                     mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
                 }
-                sockets.remove(socket);
                 mainController.showMessageOnMainView("Errore di rete: " + socket + e.toString());
+            } finally {
+                sockets.remove(socket);
             }
         }
     }
