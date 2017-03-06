@@ -177,8 +177,6 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
                             new NetClientSender(socket, "CLOSE CONNECTION").start();
-                        } else {
-                            socket.close();
                         }
                     } else if (clientInput instanceof Order) {
                         final Order orderInput = (Order) clientInput;
@@ -196,11 +194,9 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                         }
                         updateFinished(orderInput.getTable());
-                    } else {
-                        socket.close();
                     }
                 } else {
-                    socket.close();
+                    closeOnError();
                 }
             } catch (final IOException e) {
                 e.printStackTrace();
