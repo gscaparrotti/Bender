@@ -170,7 +170,6 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         mainPanel.add(buttonPanel, BorderLayout.EAST);
         // aggiunta di mainPanel al JFrame
         this.add(mainPanel);
-        pack();
         // aggiunta degli actionListener ai pulsanti
         addTable.addActionListener(new ActionListener() {
             @Override
@@ -225,6 +224,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                 quitHandler();
             }
         });
+        pack();
         // termine della creazione della schermata principale
     }
 

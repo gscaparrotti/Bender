@@ -26,6 +26,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -281,12 +282,22 @@ public class TableDialog extends JDialog implements ITableDialog {
 
     @Override
     public void showError(final Exception e) {
-        errorLabel.setText(e.getMessage());
+        SwingUtilities.invokeLater(new Runnable() {  
+            @Override
+            public void run() {
+                errorLabel.setText(e.getMessage());
+            }
+        });
     }
 
     @Override
     public void clearErrors() {
-        errorLabel.setText("");
+        SwingUtilities.invokeLater(new Runnable() {     
+            @Override
+            public void run() {
+                errorLabel.setText("");       
+            }
+        });
     }
 
     private void addRowToTableModel(final Object... obj) {
