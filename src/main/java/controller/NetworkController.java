@@ -80,6 +80,7 @@ public class NetworkController extends Thread {
         for (final Socket s : sockets) {
             s.close();
         }
+        sockets.clear();
     }
 
     @Override
@@ -177,6 +178,8 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
                             new NetClientSender(socket, "CLOSE CONNECTION").start();
+                        } else {
+                            closeOnError();
                         }
                     } else if (clientInput instanceof Order) {
                         final Order orderInput = (Order) clientInput;
@@ -194,6 +197,8 @@ public class NetworkController extends Thread {
                             new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
                         }
                         updateFinished(orderInput.getTable());
+                    } else {
+                        closeOnError();
                     }
                 } else {
                     closeOnError();
@@ -220,8 +225,9 @@ public class NetworkController extends Thread {
             } catch (final IOException e) {
                 e.printStackTrace();
                 mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
+            } finally {
+                sockets.remove(socket);
             }
-            sockets.remove(socket);
             //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
         }
     }
