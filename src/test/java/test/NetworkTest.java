@@ -1,3 +1,4 @@
+package test;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -25,21 +26,21 @@ public class NetworkTest {
     public void test() {
         final IMainController ctrl = MainController.getInstance();
         ctrl.setModel(new Restaurant(), new Menu());
-        NetworkController net = new NetworkController(ctrl, 6789);
+        final NetworkController net = new NetworkController(ctrl, 6789);
         net.start();
         final ExecutorService ex = Executors.newFixedThreadPool(30);
         final Set<Callable<Void>> set = new HashSet<>();
         for (int i = 0; i < 30; i++) {
             set.add(new Callable<Void>() {              
                 @Override
-                public Void call() throws Exception {
+                public Void call() {
                     try {
-                        Socket socket = new Socket("127.0.0.1", 6789);
-                        ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+                        final Socket socket = new Socket("127.0.0.1", 6789); //NOPMD
+                        final ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
                         oos.writeObject("GET MENU");
                         //ALWAYS WRITE SOMETHING BEFORE CREATING THE OBJECTINPUTSTREAM!!!
-                        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-                        Object obj = ois.readObject();
+                        final ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                        final Object obj = ois.readObject();
                         socket.close();
                         if (!(obj instanceof IMenu)) {
                             fail("Oggetto ricevuto non corretto");

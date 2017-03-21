@@ -56,7 +56,7 @@ public class TableDialog extends JDialog implements ITableDialog {
     private final JLabel lblContoTotale = new JLabel(BILL_TEXT);
     private final DialogJTable orders;
     private final int tableNumber;
-    private boolean isManual = false;
+    private boolean isManual;
     private IDialogController ctrl;
     private final IMainController mainCtrl; // NOPMD
 
@@ -143,7 +143,7 @@ public class TableDialog extends JDialog implements ITableDialog {
             public void actionPerformed(final ActionEvent e) {
                 if (isManual) {
                     try {
-                        double price = Double.parseDouble(prezzoManual.getText());
+                        final double price = Double.parseDouble(prezzoManual.getText());
                         ctrl.commandAdd(tableNumber, new Dish(nomeManual.getText(), price), 1);
                     } catch (final NumberFormatException ex) {
                         mainCtrl.showMessageOnMainView("Prezzo inserito non valido. Controllare.");
@@ -155,7 +155,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         });
         manual.addActionListener(new ActionListener() {          
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 if (isManual) {
                     panel1.remove(nomeManual);
                     panel1.remove(prezzoManual);

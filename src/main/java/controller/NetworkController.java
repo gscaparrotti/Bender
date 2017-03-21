@@ -37,12 +37,12 @@ public class NetworkController extends Thread {
     public static String getCurrentIP() {
         try {
             String ips = "<html>";
-            Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
+            final Enumeration<NetworkInterface> e = NetworkInterface.getNetworkInterfaces();
             while (e.hasMoreElements()) {
-                NetworkInterface n = e.nextElement();
-                Enumeration<InetAddress> ee = n.getInetAddresses();
+                final NetworkInterface n = e.nextElement();
+                final Enumeration<InetAddress> ee = n.getInetAddresses();
                 while (ee.hasMoreElements()) {
-                    InetAddress i = ee.nextElement();
+                    final InetAddress i = ee.nextElement();
                     if (i.getHostAddress().startsWith("192.168") || i.getHostAddress().startsWith("10.0")) {
                         ips = ips.concat(i.getHostAddress() + "<br/>");
                     }
@@ -76,11 +76,11 @@ public class NetworkController extends Thread {
     
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         for (final Socket s : sockets) {
             s.close();
         }
         sockets.clear();
+        super.finalize();
     }
 
     @Override
@@ -91,7 +91,7 @@ public class NetworkController extends Thread {
                 final Socket socket = welcomeSocket.accept();
                 final NetClientListener cl = new NetClientListener(socket);
                 sockets.add(socket);
-                System.out.println(sockets.size());
+                //System.out.println(sockets.size());
                 cl.start();
             }
             welcomeSocket.close();
@@ -160,7 +160,7 @@ public class NetworkController extends Thread {
                         } else if (stringInput.equals("GET PENDING ORDERS")) {
                             final List<Order> pending = new LinkedList<>();
                             for (int i = 1; i <= mainController.getRestaurant().getTablesAmount(); i++) {
-                                for (Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
+                                for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
                                     if (entry.getValue().getX() > entry.getValue().getY()) {
                                         pending.add(new Order(i, entry.getKey(), entry.getValue()));
                                     }
@@ -204,7 +204,7 @@ public class NetworkController extends Thread {
                     closeOnError();
                 }
             } catch (final IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 closeOnError();
             } catch (final NumberFormatException e1) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
@@ -213,9 +213,6 @@ public class NetworkController extends Thread {
             } catch (final ClassNotFoundException e2) {
                 mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
                 closeOnError();
-            } catch (final Exception e3) {
-                e3.printStackTrace();
-                closeOnError();
             }
         }
         
@@ -223,7 +220,7 @@ public class NetworkController extends Thread {
             try {
                 socket.close();
             } catch (final IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
             } finally {
                 sockets.remove(socket);
@@ -269,7 +266,7 @@ public class NetworkController extends Thread {
                 try {
                     socket.close();
                 } catch (final IOException e1) {
-                    e1.printStackTrace();
+                    //e1.printStackTrace();
                     mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
                 }
                 mainController.showMessageOnMainView("Errore di rete: " + socket + e.toString());

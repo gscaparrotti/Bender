@@ -41,7 +41,7 @@ public final class MainController implements IMainController {
     private IRestaurantView view;
     private IDialogController dc;
     private IMainViewController mvc;
-    private NetworkController net = null;
+    private NetworkController net;
 
     /**
      * Creates a new empty {@link MainController}. Before you can use it, you
