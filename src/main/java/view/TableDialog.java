@@ -12,8 +12,7 @@ import java.awt.Font;
 import javax.swing.JComboBox;
 
 import model.IDish;
-import model.Dish;
-
+import model.OrderedDish;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -146,15 +145,15 @@ public class TableDialog extends JDialog implements ITableDialog {
                         final double price = Double.parseDouble(prezzoManual.getText());
                         final String name = nomeManual.getText();
                         if (name.endsWith("*")) {
-                            ctrl.commandAdd(tableNumber, new Dish(name, price, 1), 1);
+                            ctrl.commandAdd(tableNumber, new OrderedDish(name, price, 1), 1);
                         } else {
-                            ctrl.commandAdd(tableNumber, new Dish(name, price, 0), 1);
+                            ctrl.commandAdd(tableNumber, new OrderedDish(name, price, 0), 1);
                         }
                     } catch (final NumberFormatException ex) {
                         mainCtrl.showMessageOnMainView("Prezzo inserito non valido. Controllare.");
                     }
                 } else {
-                    ctrl.commandAdd(tableNumber, (IDish) comboBox.getSelectedItem(), (Integer) spinner.getValue());   
+                    ctrl.commandAdd(tableNumber, new OrderedDish((IDish) comboBox.getSelectedItem()), (Integer) spinner.getValue());   
                 }
             }
         });

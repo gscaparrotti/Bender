@@ -1,11 +1,14 @@
 package controller;
 
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Map.Entry;
-
 import model.IDish;
 import model.IRestaurant;
+import model.Order;
+import model.OrderedDish;
 import model.Pair;
 import view.IRestaurantView;
 
@@ -58,15 +61,33 @@ public class MainViewController implements IMainViewController {
         final int tablesAmount = model.getTablesAmount();
         final boolean filterEnabled = view.isFilterEnabled();
         view.clearUnprocessedOrders();
+        final LinkedList<Order> pending = new LinkedList<>();
         for (int i = 1; i <= tablesAmount; i++) {
-            final Iterator<Entry<IDish, Pair<Integer, Integer>>> iterator = model.getOrders(i).entrySet().iterator();
-            while (iterator.hasNext()) {
-                final Entry<IDish, Pair<Integer, Integer>> entry = iterator.next();
-                final boolean ok = filterEnabled && entry.getKey().getFilterValue() == 0 ? false : true;
-                if (ok && entry.getValue().getY() < entry.getValue().getX()) {
-                    view.addUnprocessedOrder(entry.getKey().getName(), i,
-                            entry.getValue().getX() - entry.getValue().getY());
+            for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
+                if (entry.getValue().getX() > entry.getValue().getY()) {
+                    pending.add(new Order(i, entry.getKey(), entry.getValue()));
                 }
+            }
+        }
+        Collections.sort(pending, new Comparator<Order>() {
+            @Override
+            public int compare(final Order o1, final Order o2) {
+                if (o1.getDish() instanceof OrderedDish && o2.getDish() instanceof OrderedDish) {
+                    return (((OrderedDish) o1.getDish()).getTime().compareTo(((OrderedDish) o2.getDish()).getTime()));
+                } else if (o1.getDish() instanceof OrderedDish && !(o2.getDish() instanceof OrderedDish)) {
+                    return -1;
+                } else if (o2.getDish() instanceof OrderedDish && !(o1.getDish() instanceof OrderedDish)){
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        });
+        for (final Order o : pending) {
+            final boolean ok = filterEnabled && o.getDish().getFilterValue() == 0 ? false : true;
+            if (ok && o.getAmounts().getY() < o.getAmounts().getX()) {
+                view.addUnprocessedOrder(o.getDish().getName(), o.getTable(),
+                        o.getAmounts().getX() - o.getAmounts().getY());
             }
         }
     }
