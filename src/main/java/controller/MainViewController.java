@@ -56,12 +56,14 @@ public class MainViewController implements IMainViewController {
     public void updateUnprocessedOrders() {
         final IRestaurant model = mainController.getRestaurant();
         final int tablesAmount = model.getTablesAmount();
+        final boolean filterEnabled = view.isFilterEnabled();
         view.clearUnprocessedOrders();
         for (int i = 1; i <= tablesAmount; i++) {
             final Iterator<Entry<IDish, Pair<Integer, Integer>>> iterator = model.getOrders(i).entrySet().iterator();
             while (iterator.hasNext()) {
                 final Entry<IDish, Pair<Integer, Integer>> entry = iterator.next();
-                if (entry.getValue().getY() < entry.getValue().getX()) {
+                final boolean ok = filterEnabled && entry.getKey().getFilterValue() == 0 ? false : true;
+                if (ok && entry.getValue().getY() < entry.getValue().getX()) {
                     view.addUnprocessedOrder(entry.getKey().getName(), i,
                             entry.getValue().getX() - entry.getValue().getY());
                 }

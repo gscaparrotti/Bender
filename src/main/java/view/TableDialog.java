@@ -144,7 +144,12 @@ public class TableDialog extends JDialog implements ITableDialog {
                 if (isManual) {
                     try {
                         final double price = Double.parseDouble(prezzoManual.getText());
-                        ctrl.commandAdd(tableNumber, new Dish(nomeManual.getText(), price), 1);
+                        final String name = nomeManual.getText();
+                        if (name.endsWith("*")) {
+                            ctrl.commandAdd(tableNumber, new Dish(name, price, 1), 1);
+                        } else {
+                            ctrl.commandAdd(tableNumber, new Dish(name, price, 0), 1);
+                        }
                     } catch (final NumberFormatException ex) {
                         mainCtrl.showMessageOnMainView("Prezzo inserito non valido. Controllare.");
                     }
