@@ -33,7 +33,7 @@ public class DialogJTable extends AbstractBenderJTable {
     protected void specificMouseListener(final int button, final int rowIndex) {
         if (rowIndex >= 0) {
             final IDish item = new Dish((String) (tm.getValueAt(rowIndex, this.getColumn("Piatto").getModelIndex())),
-                    (Double) (tm.getValueAt(rowIndex, this.getColumn("Costo").getModelIndex())));
+                    (Double) (tm.getValueAt(rowIndex, this.getColumn("Costo").getModelIndex())), 0);
             if (button == MouseEvent.BUTTON1) {
                 mainCtrl.getDialogController().commandUpdateProcessedOrders(tableNumber, item);
             } else if (button == MouseEvent.BUTTON3) {

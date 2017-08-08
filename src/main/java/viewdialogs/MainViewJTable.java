@@ -30,12 +30,14 @@ public class MainViewJTable extends AbstractBenderJTable {
         final String name = (String) tm.getValueAt(rowIndex, this.getColumn("Piatto").getModelIndex());
         final int table = (int) this.getValueAt(rowIndex, this.getColumn("Tavolo").getModelIndex());
         double cost = 0;
+        int filter = 0;
         for (final IDish i : mainCtrl.getRestaurant().getOrders(table).keySet()) {
             if (i.getName().equals(name)) {
                 cost = i.getPrice();
+                filter = i.getFilterValue();
             }
         }
-        final IDish item = new Dish(name, cost);
+        final IDish item = new Dish(name, cost, filter);
         if (button == MouseEvent.BUTTON1) {
             try {
                 mainCtrl.getRestaurant().setOrderAsProcessed(table, item);

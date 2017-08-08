@@ -104,7 +104,8 @@ public final class MainController implements IMainController {
                     final String[] dishStrings = line.split(" -- ");
                     if (dishStrings.length == Dish.FIELDS) {
                         menu.addItems(
-                                new Dish(dishStrings[0], Double.parseDouble(dishStrings[dishStrings.length - 1])));
+                                new Dish(dishStrings[0], Double.parseDouble(dishStrings[1])
+                                        , Integer.parseInt(dishStrings[2])));
                     }
                 }
             }

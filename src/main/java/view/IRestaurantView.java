@@ -56,5 +56,10 @@ public interface IRestaurantView {
      *            Adds a new unprocessed order.
      */
     void addUnprocessedOrder(String name, int table, int quantity);
+    
+    /**
+     * @return true if the unprocessed orders should be filtered
+     */
+    boolean isFilterEnabled();
 
 }
