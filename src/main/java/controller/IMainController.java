@@ -76,6 +76,18 @@ public interface IMainController {
      * @return The previously set {@link IMenu} instance
      */
     IMenu getMenu();
+    
+    /**
+     * @return The previously set {@link NetworkController} instance, which
+     * is used to communicate with remote devices running Bender Mobile
+     */
+    NetworkController getNetworkController();
+    
+    /**
+     * @return Sets the {@link NetworkController} , which will be
+     * used to communicate with remote devices running Bender Mobile
+     */
+    void setNetworkController(final NetworkController net);
 
     /**
      * @return the amount of loaded tables, or -1 if the loading failed.

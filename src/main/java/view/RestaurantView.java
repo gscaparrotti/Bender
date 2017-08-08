@@ -16,7 +16,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Objects;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -25,10 +27,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import controller.IMainController;
 import controller.IMainViewController;
-import utilities.CheckNull;
+import controller.MainController;
+import controller.NetworkController;
 import viewdialogs.MainViewJTable;
 
 /**
@@ -43,6 +48,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     private final JPanel tablePanel = new JPanel(new GridBagLayout());
     private GridBagConstraints tablecnst = new GridBagConstraints();
     private final JCheckBox autoSaveCheckBox = new JCheckBox("Auto-Salvataggio");
+    private boolean filter;
     private IMainController ctrl;
     private IMainViewController viewCtrl;
     private MainViewJTable toBeServed;
@@ -63,7 +69,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
 
     @Override
     public void setControllers(final IMainController controller, final IMainViewController viewController) {
-        CheckNull.checkNull(controller, viewController);
+        Objects.requireNonNull(controller);
+        Objects.requireNonNull(viewController);
         this.ctrl = controller;
         this.viewCtrl = viewController;
     }
@@ -82,8 +89,9 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         final JButton exit = new JButton("Esci");
         final JButton load = new JButton("Carica");
         final JButton save = new JButton("Salva");
-        final ImageIcon icon = new ImageIcon(RestaurantView.class.getResource("/icon.gif"));
+        final ImageIcon icon = new ImageIcon(RestaurantView.class.getResource("/icon.png"));
         final JLabel iconLabel = new JLabel(icon);
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         final JPanel buttonPanelInternal = new JPanel(new GridBagLayout());
         GridBagConstraints buttonCnst = new GridBagConstraints();
         buttonCnst.gridy = 0;
@@ -104,6 +112,10 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         buttonCnst.gridy++;
         buttonPanelInternal.add(iconLabel, buttonCnst);
         buttonCnst.gridy++;
+        final JLabel ip = new JLabel(NetworkController.getCurrentIP(), JLabel.CENTER);
+        ip.setFont(ip.getFont().deriveFont(Font.BOLD, 16));
+        ip.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+        buttonPanelInternal.add(ip, buttonCnst);
         buttonPanelInternal.setVisible(false);
         final JPanel buttonPanel = new JPanel(new BorderLayout());
         final ImageIcon arrowLeft = new ImageIcon(new ImageIcon(RestaurantView.class.getResource("/arrow_left.png"))
@@ -148,8 +160,11 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         final JLabel daServire = new JLabel("<html>Piatti da Servire <br/> <br/> </html>");
         daServire.setHorizontalAlignment(JLabel.CENTER);
         daServire.setFont(daServire.getFont().deriveFont(Font.BOLD, 24));
+        daServire.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
+        final JCheckBox filterOrders = new JCheckBox("Filtra ordini");
         toBeServedPanel.add(daServire, BorderLayout.NORTH);
         toBeServedPanel.add(scrollToBeServed, BorderLayout.CENTER);
+        toBeServedPanel.add(filterOrders, BorderLayout.SOUTH);
         toBeServedPanel.setBackground(new Color(255, 190, 100));
         // aggiunta dei nuovi JPanel a mainPanel
         mainPanel.add(toBeServedPanel, BorderLayout.WEST);
@@ -157,7 +172,6 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         mainPanel.add(buttonPanel, BorderLayout.EAST);
         // aggiunta di mainPanel al JFrame
         this.add(mainPanel);
-        pack();
         // aggiunta degli actionListener ai pulsanti
         addTable.addActionListener(new ActionListener() {
             @Override
@@ -200,6 +214,13 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         });
+        filterOrders.addChangeListener(new ChangeListener() {          
+            @Override
+            public void stateChanged(final ChangeEvent e) {
+                filter = filterOrders.isSelected();
+                viewCtrl.updateUnprocessedOrders();
+            }
+        });
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -212,6 +233,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                 quitHandler();
             }
         });
+        pack();
         // termine della creazione della schermata principale
     }
 
@@ -252,14 +274,14 @@ public class RestaurantView extends JFrame implements IRestaurantView {
 
     @Override
     public void showApplicationMessage(final String message) {
-        CheckNull.checkNull(message);
+        Objects.requireNonNull(message);
         JOptionPane.showMessageDialog(this, "Informazione: ".concat(message), "Messaggio",
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
     @Override
     public void showIrreversibleError(final String message) {
-        CheckNull.checkNull(message);
+        Objects.requireNonNull(message);
         JOptionPane.showMessageDialog(this,
                 "Si è verificato un errore irreversibile: ".concat(message).concat(". L'applicazione verrà chiusa"),
                 "Errore Fatale", JOptionPane.ERROR_MESSAGE);
@@ -274,6 +296,10 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     @Override
     public void addUnprocessedOrder(final String name, final int table, final int quantity) {
         toBeServed.addRow(new Object[] { name, table, quantity });
+    }
+    
+    public boolean isFilterEnabled() {
+        return filter;
     }
 
     private void initLayout() {
@@ -293,6 +319,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     }
 
     private void exit() {
+        MainController.getInstance().getNetworkController().stopListening();
         System.exit(0);
     }
 

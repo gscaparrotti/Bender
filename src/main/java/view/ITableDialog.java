@@ -76,4 +76,9 @@ public interface ITableDialog {
      */
     void setControllerAndBuildView(IDialogController dialogCtrl);
 
+    /**
+     * @return the table showed by this dialog
+     */
+    int getTable();
+
 }

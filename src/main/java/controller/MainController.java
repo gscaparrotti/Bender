@@ -10,11 +10,12 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
+import java.util.Objects;
+
 import view.IRestaurantView;
 import model.Dish;
 import model.IMenu;
 import model.IRestaurant;
-import utilities.CheckNull;
 
 /**
  *
@@ -40,6 +41,7 @@ public final class MainController implements IMainController {
     private IRestaurantView view;
     private IDialogController dc;
     private IMainViewController mvc;
+    private NetworkController net;
 
     /**
      * Creates a new empty {@link MainController}. Before you can use it, you
@@ -59,7 +61,8 @@ public final class MainController implements IMainController {
 
     @Override
     public void setModel(final IRestaurant newModel, final IMenu newMenu) {
-        CheckNull.checkNull(newModel, newMenu);
+        Objects.requireNonNull(newModel);
+        Objects.requireNonNull(newMenu);
         this.menu = newMenu;
         this.model = newModel;
         loadMenu();
@@ -68,7 +71,9 @@ public final class MainController implements IMainController {
     @Override
     public void setMainViewAndControllers(final IRestaurantView newView, final IMainViewController viewCtrl,
             final IDialogController dialogCtrl) {
-        CheckNull.checkNull(newView, viewCtrl, dialogCtrl);
+        Objects.requireNonNull(newView);
+        Objects.requireNonNull(viewCtrl);
+        Objects.requireNonNull(dialogCtrl);
         this.dc = dialogCtrl;
         this.mvc = viewCtrl;
         this.view = newView;
@@ -99,7 +104,8 @@ public final class MainController implements IMainController {
                     final String[] dishStrings = line.split(" -- ");
                     if (dishStrings.length == Dish.FIELDS) {
                         menu.addItems(
-                                new Dish(dishStrings[0], Double.parseDouble(dishStrings[dishStrings.length - 1])));
+                                new Dish(dishStrings[0], Double.parseDouble(dishStrings[1])
+                                        , Integer.parseInt(dishStrings[2])));
                     }
                 }
             }
@@ -171,6 +177,16 @@ public final class MainController implements IMainController {
 
     private void exit() {
         System.exit(0);
+    }
+
+    public NetworkController getNetworkController() {
+        return net;
+    }
+
+    public void setNetworkController(final NetworkController net) {
+        if (net != null) {
+            this.net = net;
+        }
     }
 
 }

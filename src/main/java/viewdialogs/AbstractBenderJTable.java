@@ -5,6 +5,7 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import controller.IMainController;
@@ -60,14 +61,24 @@ public abstract class AbstractBenderJTable extends JTable {
      * @param elements the elements to be added to this table
      */
     public void addRow(final Object... elements) {
-        tm.addRow(elements);
+        SwingUtilities.invokeLater(new Runnable() {          
+            @Override
+            public void run() {
+                tm.addRow(elements);          
+            }
+        });
     }
 
     /**
      * Deletes all the elements from this table.
      */
     public void reset() {
-        tm.setDataVector(INIT_DATA, props);
+        SwingUtilities.invokeLater(new Runnable() {  
+            @Override
+            public void run() {
+                tm.setDataVector(INIT_DATA, props);       
+            }
+        });
     }
 
     /**
@@ -76,6 +87,6 @@ public abstract class AbstractBenderJTable extends JTable {
      * @param button the pressed mouse button
      * @param rowIndex the row which has been clicked
      */
-    protected abstract void specificMouseListener(final int button, final int rowIndex);
+    protected abstract void specificMouseListener(int button, int rowIndex);
 
 }

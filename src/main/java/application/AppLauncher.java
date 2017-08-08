@@ -11,6 +11,7 @@ import model.Restaurant;
 import controller.IMainController;
 import controller.MainController;
 import controller.MainViewController;
+import controller.NetworkController;
 import controller.DialogController;
 import view.RestaurantView;
 
@@ -34,15 +35,17 @@ public final class AppLauncher {
      *
      *            Bender's main method.
      */
-    public static void main(final String... args) {
+    public static void main(final String[] args) {
         final IMainController ctrl = MainController.getInstance();
         try {
             final RestaurantView v = new RestaurantView();
             ctrl.setModel(new Restaurant(), new Menu());
             ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
+            final NetworkController net = new NetworkController(ctrl, 6789);
             setLookAndFeel();
             v.buildView();
             v.setVisible(true);
+            net.start();
         } catch (final Exception e) {
             ctrl.showIrreversibleErrorOnMainView(e.getMessage());
         }
