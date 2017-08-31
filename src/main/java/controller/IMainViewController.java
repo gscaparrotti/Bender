@@ -35,5 +35,11 @@ public interface IMainViewController {
      * Updateds the unprocessed orders.
      */
     void updateUnprocessedOrders();
+    
+    /**
+     * Tells the view to update the name of each table. You should call this method when you change the name of one
+     * or more tables. 
+     */
+    void updateTableNames();
 
 }

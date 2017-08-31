@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.swing.SwingUtilities;
+
 import model.IDish;
 import model.IRestaurant;
 import model.Order;
@@ -176,6 +178,21 @@ public class NetworkController extends Thread {
                             mainController.getRestaurant().resetTable(tableNmbr);
                             updateFinished(tableNmbr);
                             new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
+                        } else if (stringInput.startsWith("GET NAME")) {
+                            final int tableNmbr = Integer.parseInt(stringInput.substring("GET NAME".length() + 1));
+                            final String tableName = mainController.getRestaurant().getTableName(tableNmbr);
+                            new NetClientSender(socket, tableName).start();
+                        } else if (stringInput.startsWith("SET NAME")) {
+                            final String[] strings = stringInput.split(" ", 4);
+                            final int tableNmbr = Integer.parseInt(strings[2]);
+                            mainController.getRestaurant().setTableName(tableNmbr, strings[4]);
+                            updateFinished(tableNmbr);
+                            new NetClientSender(socket, "NAME SET CORRECTLY").start();
+                        } else if (stringInput.startsWith("REMOVE NAME")) {
+                            final int tableNmbr = Integer.parseInt(stringInput.substring("REMOVE NAME".length() + 1));
+                            mainController.getRestaurant().setTableName(tableNmbr, null);
+                            updateFinished(tableNmbr);
+                            new NetClientSender(socket, "NAME REMOVED CORRECTLY").start();
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
                             new NetClientSender(socket, "CLOSE CONNECTION").start();
                         } else {
@@ -230,8 +247,15 @@ public class NetworkController extends Thread {
     }
 
     private void updateFinished(final int tableNumber) {
-        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
-        mainController.getMainViewController().updateUnprocessedOrders();
+        SwingUtilities.invokeLater(new Runnable() {            
+            @Override
+            public void run() {
+                mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
+                mainController.getDialogController().updateTableName(tableNumber);
+                mainController.getMainViewController().updateUnprocessedOrders();
+                mainController.getMainViewController().updateTableNames();
+            }
+        });
         mainController.autoSave();
     }
 

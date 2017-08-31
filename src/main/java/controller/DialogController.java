@@ -119,6 +119,24 @@ public class DialogController implements IDialogController {
             updateStatus(tableNumber);
         }
     }
+    
+    @Override
+    public void commandSetTableName(final int table, final String name) {
+        ctrl.getRestaurant().setTableName(table, name);
+        updateTableName(table);
+    }
+
+    @Override
+    public String getTableName(final int table) {
+        return ctrl.getRestaurant().getTableName(table);
+    }
+    
+    @Override
+    public void updateTableName(final int table) {
+        if(tableDialog != null && tableDialog.getTable() == table) {
+            tableDialog.updateTableNameInDialog();
+        }
+    }
 
     /*
      * (non-Javadoc)
@@ -167,6 +185,7 @@ public class DialogController implements IDialogController {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             ctrl.getRestaurant().resetTable(tableNumber);
             updateStatus(tableNumber);
+            updateTableName(tableNumber);
         }
     }
 

@@ -5,6 +5,9 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
+
+import com.google.common.base.Strings;
+
 import model.IDish;
 import model.IRestaurant;
 import model.Order;
@@ -54,6 +57,11 @@ public class MainViewController implements IMainViewController {
             return false;
         }
     }
+    
+    @Override
+    public void updateTableNames() {
+        view.updateTableNames();
+    }
 
     @Override
     public void updateUnprocessedOrders() {
@@ -86,7 +94,11 @@ public class MainViewController implements IMainViewController {
         for (final Order o : pending) {
             final boolean ok = filterEnabled && o.getDish().getFilterValue() == 0 ? false : true;
             if (ok && o.getAmounts().getY() < o.getAmounts().getX()) {
-                view.addUnprocessedOrder(o.getDish().getName(), o.getTable(),
+                String tableName = Strings.nullToEmpty(mainController.getRestaurant().getTableName(o.getTable()));
+                if (tableName.length() > 0) {
+                    tableName = " - " + tableName;
+                }
+                view.addUnprocessedOrder(o.getDish().getName(), o.getTable() + tableName,
                         o.getAmounts().getX() - o.getAmounts().getY());
             }
         }

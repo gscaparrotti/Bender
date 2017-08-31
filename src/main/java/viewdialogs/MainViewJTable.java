@@ -28,7 +28,8 @@ public class MainViewJTable extends AbstractBenderJTable {
     @Override
     public void specificMouseListener(final int button, final int rowIndex) {
         final String name = (String) tm.getValueAt(rowIndex, this.getColumn("Piatto").getModelIndex());
-        final int table = (int) this.getValueAt(rowIndex, this.getColumn("Tavolo").getModelIndex());
+        final String tableString = (String) this.getValueAt(rowIndex, this.getColumn("Tavolo").getModelIndex());
+        final int table = Integer.parseInt(tableString.substring(0, tableString.indexOf(' ') != -1 ? tableString.indexOf(' ') : tableString.length()));
         double cost = 0;
         int filter = 0;
         for (final IDish i : mainCtrl.getRestaurant().getOrders(table).keySet()) {

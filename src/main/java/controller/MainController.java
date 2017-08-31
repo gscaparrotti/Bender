@@ -12,6 +12,8 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
+import javax.swing.SwingUtilities;
+
 import view.IRestaurantView;
 import model.Dish;
 import model.IMenu;
@@ -141,9 +143,14 @@ public final class MainController implements IMainController {
 
     @Override
     public void autoSave() {
-        if (view != null && view.isAutoSaveOption()) {
-            commandSave();
-        }
+        SwingUtilities.invokeLater(new Runnable() {         
+            @Override
+            public void run() {
+                if (view != null && view.isAutoSaveOption()) {
+                    commandSave();
+                }  
+            }
+        });
     }
 
     @Override

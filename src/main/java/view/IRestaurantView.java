@@ -55,11 +55,17 @@ public interface IRestaurantView {
      * 
      *            Adds a new unprocessed order.
      */
-    void addUnprocessedOrder(String name, int table, int quantity);
+    void addUnprocessedOrder(String name, String table, int quantity);
     
     /**
      * @return true if the unprocessed orders should be filtered
      */
     boolean isFilterEnabled();
+    
+    /**
+     * Tells the view to update the name of each table. You should call this method when you change the name of one
+     * or more tables. 
+     */
+    void updateTableNames();
 
 }

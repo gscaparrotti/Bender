@@ -6,15 +6,23 @@ apply plugin: 'findbugs'
 
 sourceCompatibility = "$jdkVersion"
 
+configurations.all {
+    // Check for updates every build
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
 	mavenCentral()
 	maven { url "https://jitpack.io" }
 }
+
 dependencies {
-	compile 'com.github.gscaparrotti:BenderModel:develop-SNAPSHOT'
 	compile "org.danilopianini:javalib-java7:$javalib7Version"
 	compile "com.miglayout:miglayout:$migLayoutVersion"
 	compile "jgoodies:forms:$formsVersion"
+	compile("com.github.gscaparrotti:BenderModel:develop-SNAPSHOT") {
+		changing = true	
+	}
 
     pmd(
         "net.sourceforge.pmd:pmd-core:$pmdVersion",
