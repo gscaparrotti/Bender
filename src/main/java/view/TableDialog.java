@@ -103,14 +103,6 @@ public class TableDialog extends JDialog implements ITableDialog {
         gbcLblGestioneDegliOrdini.gridx = 0;
         gbcLblGestioneDegliOrdini.gridy = 0;
         getContentPane().add(lblGestioneDegliOrdini, gbcLblGestioneDegliOrdini);
-
-        final JLabel lblSelezionareIlPiatto = new JLabel(
-                "Selezionare il piatto da aggiungere, quindi premere AGGIUNGI");
-        final GridBagConstraints gbcLblSelezionareIlPiatto = new GridBagConstraints();
-        gbcLblSelezionareIlPiatto.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
-        gbcLblSelezionareIlPiatto.gridx = 0;
-        gbcLblSelezionareIlPiatto.gridy = 1;
-        getContentPane().add(lblSelezionareIlPiatto, gbcLblSelezionareIlPiatto);
         
         final JTextField tableNameTextField = new JTextField();
         final JLabel tableNameLabel = new JLabel("Nuovo nome del tavolo: ");    
@@ -126,11 +118,19 @@ public class TableDialog extends JDialog implements ITableDialog {
         panelTableName.add(buttonTableName, BorderLayout.EAST);
         panelTableName.add(tableNameTextField, BorderLayout.CENTER);
         final GridBagConstraints gbcTableName = new GridBagConstraints();
-        gbcTableName.insets = new Insets(INSETS[0], 11, INSETS[2], 7);
+        gbcTableName.insets = new Insets(INSETS[0], 11, 10, 7);
         gbcTableName.gridx = 0;
-        gbcTableName.gridy = 2;
+        gbcTableName.gridy = 1;
         gbcTableName.fill = GridBagConstraints.HORIZONTAL;
         getContentPane().add(panelTableName, gbcTableName);
+        
+        final JLabel lblSelezionareIlPiatto = new JLabel(
+                "Selezionare il piatto da aggiungere, quindi premere AGGIUNGI");
+        final GridBagConstraints gbcLblSelezionareIlPiatto = new GridBagConstraints();
+        gbcLblSelezionareIlPiatto.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
+        gbcLblSelezionareIlPiatto.gridx = 0;
+        gbcLblSelezionareIlPiatto.gridy = 2;
+        getContentPane().add(lblSelezionareIlPiatto, gbcLblSelezionareIlPiatto);
         
         final JPanel panel1 = new JPanel();
         final GridBagConstraints gbcPanel1 = new GridBagConstraints();

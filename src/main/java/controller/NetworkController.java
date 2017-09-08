@@ -178,10 +178,8 @@ public class NetworkController extends Thread {
                             mainController.getRestaurant().resetTable(tableNmbr);
                             updateFinished(tableNmbr);
                             new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
-                        } else if (stringInput.startsWith("GET NAME")) {
-                            final int tableNmbr = Integer.parseInt(stringInput.substring("GET NAME".length() + 1));
-                            final String tableName = mainController.getRestaurant().getTableName(tableNmbr);
-                            new NetClientSender(socket, tableName).start();
+                        } else if (stringInput.startsWith("GET NAMES")) {
+                            new NetClientSender(socket, mainController.getRestaurant().getAllNames()).start();
                         } else if (stringInput.startsWith("SET NAME")) {
                             final String[] strings = stringInput.split(" ", 4);
                             final int tableNmbr = Integer.parseInt(strings[2]);
