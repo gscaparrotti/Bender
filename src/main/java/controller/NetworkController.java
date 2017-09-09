@@ -183,14 +183,14 @@ public class NetworkController extends Thread {
                         } else if (stringInput.startsWith("SET NAME")) {
                             final String[] strings = stringInput.split(" ", 4);
                             final int tableNmbr = Integer.parseInt(strings[2]);
-                            mainController.getRestaurant().setTableName(tableNmbr, strings[4]);
+                            mainController.getRestaurant().setTableName(tableNmbr, strings[3]);
                             updateFinished(tableNmbr);
                             new NetClientSender(socket, "NAME SET CORRECTLY").start();
                         } else if (stringInput.startsWith("REMOVE NAME")) {
                             final int tableNmbr = Integer.parseInt(stringInput.substring("REMOVE NAME".length() + 1));
                             mainController.getRestaurant().setTableName(tableNmbr, null);
                             updateFinished(tableNmbr);
-                            new NetClientSender(socket, "NAME REMOVED CORRECTLY").start();
+                            new NetClientSender(socket, "NAME SET CORRECTLY").start();
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
                             new NetClientSender(socket, "CLOSE CONNECTION").start();
                         } else {
