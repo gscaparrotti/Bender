@@ -95,9 +95,11 @@ public final class MainController implements IMainController {
 
     private void loadMenu() {
         try {
-            InputStream in = MainController.class.getResourceAsStream("/menu.txt");
+            InputStream in;
             if (new File(PATHS[1]).exists()) {
                 in = new FileInputStream(PATHS[1]);
+            } else {
+                in = MainController.class.getResourceAsStream("/menu.txt");
             }
             final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF8"));
             while (r.ready()) {
