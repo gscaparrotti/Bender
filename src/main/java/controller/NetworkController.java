@@ -91,6 +91,7 @@ public class NetworkController extends Thread {
             final ServerSocket welcomeSocket = new ServerSocket(port);
             while (listen) {
                 final Socket socket = welcomeSocket.accept();
+                socket.setSoTimeout(10000);
                 final NetClientListener cl = new NetClientListener(socket);
                 sockets.add(socket);
                 //System.out.println(sockets.size());
@@ -109,8 +110,9 @@ public class NetworkController extends Thread {
     /**
      * @param restaurant the object which contains all the ordered dishes.
      * @param table the table whose orders you want to dispatch or 0 if you want to send all the orders.
+     * @throws IOException 
      */
-    public void dispatchOrders(final IRestaurant restaurant, final int table) {
+    public void dispatchOrders(final IRestaurant restaurant, final int table) throws IOException {
         if (restaurant == null || table < 0) {
             throw new IllegalArgumentException();
         }
@@ -263,7 +265,7 @@ public class NetworkController extends Thread {
         private ObjectOutputStream output;
         private final Object toSend;
 
-        NetClientSender(final Socket socket, final Object toSend) {
+        NetClientSender(final Socket socket, final Object toSend) throws IOException {
             super();
             if (socket == null || toSend == null) {
                 throw new IllegalArgumentException();
@@ -273,6 +275,7 @@ public class NetworkController extends Thread {
             try {
                 this.output = new ObjectOutputStream(socket.getOutputStream());
             } catch (IOException e) {
+                socket.close();
                 mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'outputStream: " + e.toString());
             }
         }
