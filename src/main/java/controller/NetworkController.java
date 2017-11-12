@@ -90,6 +90,7 @@ public class NetworkController extends Thread {
         try {
             final ServerSocket welcomeSocket = new ServerSocket(port);
             while (listen) {
+                @SuppressWarnings("resource")
                 final Socket socket = welcomeSocket.accept();
                 socket.setSoTimeout(10000);
                 final NetClientListener cl = new NetClientListener(socket);
@@ -262,7 +263,7 @@ public class NetworkController extends Thread {
     private final class NetClientSender extends Thread {
 
         private final Socket socket;
-        private ObjectOutputStream output;
+        private final ObjectOutputStream output;
         private final Object toSend;
 
         NetClientSender(final Socket socket, final Object toSend) throws IOException {
@@ -272,12 +273,7 @@ public class NetworkController extends Thread {
             }
             this.socket = socket;
             this.toSend = toSend;
-            try {
-                this.output = new ObjectOutputStream(socket.getOutputStream());
-            } catch (IOException e) {
-                socket.close();
-                mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'outputStream: " + e.toString());
-            }
+            this.output = new ObjectOutputStream(socket.getOutputStream());
         }
 
         @Override
