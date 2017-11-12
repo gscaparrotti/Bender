@@ -255,9 +255,9 @@ public class NetworkController extends Thread {
                 mainController.getDialogController().updateTableName(tableNumber);
                 mainController.getMainViewController().updateUnprocessedOrders();
                 mainController.getMainViewController().updateTableNames();
+                mainController.autoSave();
             }
         });
-        mainController.autoSave();
     }
 
     private final class NetClientSender extends Thread {
