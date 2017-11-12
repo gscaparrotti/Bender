@@ -104,7 +104,7 @@ public class NetworkController extends Thread {
                 sockets.remove(s);
             }
         } catch (IOException e) {
-            mainController.showMessageOnMainView("Errore nei servizi di rete: " + e.getMessage());
+            showErrorMessage("Errore nei servizi di rete: " + e.getMessage());
         }
     }
 
@@ -225,11 +225,11 @@ public class NetworkController extends Thread {
                 //e.printStackTrace();
                 closeOnError();
             } catch (final NumberFormatException e1) {
-                mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
+                showErrorMessage("Il client " + socket + " ha richiesto gli ordini"
                         + "di un tavolo non valido.");
                 closeOnError();
             } catch (final ClassNotFoundException e2) {
-                mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
+                showErrorMessage("Il client " + socket + " ha inviato dati non validi.");
                 closeOnError();
             }
         }
@@ -239,11 +239,11 @@ public class NetworkController extends Thread {
                 socket.close();
             } catch (final IOException e) {
                 //e.printStackTrace();
-                mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
+                showErrorMessage("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
             } finally {
                 sockets.remove(socket);
             }
-            //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
+            //showErrorMessage("Il client " + socket + " si è disconnesso.");
         }
     }
 
@@ -288,12 +288,21 @@ public class NetworkController extends Thread {
                     socket.close();
                 } catch (final IOException e1) {
                     //e1.printStackTrace();
-                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+                    showErrorMessage("Errore nella chiusura della socket" + socket + e1.toString());
                 }
-                mainController.showMessageOnMainView("Errore di rete: " + socket + e.toString());
+                showErrorMessage("Errore di rete: " + socket + e.toString());
             } finally {
                 sockets.remove(socket);
             }
         }
+    }
+    
+    private void showErrorMessage(final String error) {
+        SwingUtilities.invokeLater(new Runnable() {           
+            @Override
+            public void run() {
+                mainController.showMessageOnMainView(error);               
+            }
+        });
     }
 }
