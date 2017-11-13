@@ -12,13 +12,9 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.swing.SwingUtilities;
 
 import model.IDish;
-import model.IRestaurant;
 import model.Order;
 import model.Pair;
 
@@ -30,7 +26,6 @@ public class NetworkController extends Thread {
 
     private final int port;
     private boolean listen = true;
-    private final Set<Socket> sockets = ConcurrentHashMap.newKeySet();
     private final IMainController mainController;
 
     /**
@@ -75,15 +70,6 @@ public class NetworkController extends Thread {
             throw new IllegalArgumentException();
         }
     }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        for (final Socket s : sockets) {
-            s.close();
-        }
-        sockets.clear();
-        super.finalize();
-    }
 
     @Override
     public void run() {
@@ -94,38 +80,15 @@ public class NetworkController extends Thread {
                 final Socket socket = welcomeSocket.accept();
                 socket.setSoTimeout(10000);
                 final NetClientListener cl = new NetClientListener(socket);
-                sockets.add(socket);
                 //System.out.println(sockets.size());
                 cl.start();
             }
             welcomeSocket.close();
-            for (final Socket s : sockets) {
-                s.close();
-                sockets.remove(s);
-            }
         } catch (IOException e) {
             showErrorMessage("Errore nei servizi di rete: " + e.getMessage());
         }
     }
 
-    /**
-     * @param restaurant the object which contains all the ordered dishes.
-     * @param table the table whose orders you want to dispatch or 0 if you want to send all the orders.
-     * @throws IOException 
-     */
-    public void dispatchOrders(final IRestaurant restaurant, final int table) throws IOException {
-        if (restaurant == null || table < 0) {
-            throw new IllegalArgumentException();
-        }
-        if (table == 0) {
-            for (int i = 0; i < mainController.getRestaurant().getTablesAmount(); i++) {
-                for (final Socket s : sockets) {
-                    final NetClientSender sender = new NetClientSender(s, i);
-                    sender.start();
-                }
-            }
-        }
-    }
     /**
      * Closes the welcome socket and all the existing sockets. 
      * After you call this method, you cannot restart listening;
@@ -240,8 +203,6 @@ public class NetworkController extends Thread {
             } catch (final IOException e) {
                 //e.printStackTrace();
                 showErrorMessage("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
-            } finally {
-                sockets.remove(socket);
             }
             //showErrorMessage("Il client " + socket + " si è disconnesso.");
         }
@@ -291,8 +252,6 @@ public class NetworkController extends Thread {
                     showErrorMessage("Errore nella chiusura della socket" + socket + e1.toString());
                 }
                 showErrorMessage("Errore di rete: " + socket + e.toString());
-            } finally {
-                sockets.remove(socket);
             }
         }
     }
