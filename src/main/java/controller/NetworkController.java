@@ -207,8 +207,11 @@ public class NetworkController extends Thread {
                             }
                             response = "ORDER UPDATED CORRECTLY";
                         } else {
-                            mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(),
-                                    orderInput.getDish());
+                            if (mainController.getRestaurant().getOrders(orderInput.getTable())
+                                    .containsKey(orderInput.getDish())) {
+                                mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(),
+                                        orderInput.getDish());
+                            }
                             response = "ORDER UPDATED CORRECTLY";
                         }
                         updateFinished(orderInput.getTable());
