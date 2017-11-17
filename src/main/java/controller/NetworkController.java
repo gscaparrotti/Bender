@@ -90,11 +90,11 @@ public class NetworkController extends Thread {
      * After you call this method, you cannot restart listening;
      * you must create a new NetworkController instead.
      */
-    public synchronized void stopListening() {
+    public void stopListening() {
         this.listen = false;
     }
     
-    private synchronized boolean keepListening() {
+    private boolean keepListening() {
         return this.listen;
     }
     
