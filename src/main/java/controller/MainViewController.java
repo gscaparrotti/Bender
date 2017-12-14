@@ -42,8 +42,7 @@ public class MainViewController implements IMainViewController {
 
     @Override
     public int addTable() {
-        mainController.getRestaurant().addTable();
-        return mainController.getRestaurant().getTablesAmount();
+        return mainController.getRestaurant().addTable();
     }
 
     @Override
@@ -66,40 +65,41 @@ public class MainViewController implements IMainViewController {
     @Override
     public void updateUnprocessedOrders() {
         final IRestaurant model = mainController.getRestaurant();
-        final int tablesAmount = model.getTablesAmount();
         final boolean filterEnabled = view.isFilterEnabled();
         view.clearUnprocessedOrders();
         final LinkedList<Order> pending = new LinkedList<>();
-        for (int i = 1; i <= tablesAmount; i++) {
-            for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
-                if (entry.getValue().getX() > entry.getValue().getY()) {
-                    pending.add(new Order(i, entry.getKey(), entry.getValue()));
+        synchronized (model) {
+            for (int i = 1; i <= model.getTablesAmount(); i++) {
+                for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : model.getOrders(i).entrySet()) {
+                    if (entry.getValue().getX() > entry.getValue().getY()) {
+                        pending.add(new Order(i, entry.getKey(), entry.getValue()));
+                    }
                 }
             }
-        }
-        Collections.sort(pending, new Comparator<Order>() {
-            @Override
-            public int compare(final Order o1, final Order o2) {
-                if (o1.getDish() instanceof OrderedDish && o2.getDish() instanceof OrderedDish) {
-                    return (((OrderedDish) o1.getDish()).getTime().compareTo(((OrderedDish) o2.getDish()).getTime()));
-                } else if (o1.getDish() instanceof OrderedDish && !(o2.getDish() instanceof OrderedDish)) {
-                    return -1;
-                } else if (o2.getDish() instanceof OrderedDish && !(o1.getDish() instanceof OrderedDish)){
-                    return 1;
-                } else {
-                    return 0;
+            Collections.sort(pending, new Comparator<Order>() {
+                @Override
+                public int compare(final Order o1, final Order o2) {
+                    if (o1.getDish() instanceof OrderedDish && o2.getDish() instanceof OrderedDish) {
+                        return (((OrderedDish) o1.getDish()).getTime().compareTo(((OrderedDish) o2.getDish()).getTime()));
+                    } else if (o1.getDish() instanceof OrderedDish && !(o2.getDish() instanceof OrderedDish)) {
+                        return -1;
+                    } else if (o2.getDish() instanceof OrderedDish && !(o1.getDish() instanceof OrderedDish)){
+                        return 1;
+                    } else {
+                        return 0;
+                    }
                 }
-            }
-        });
-        for (final Order o : pending) {
-            final boolean ok = filterEnabled && o.getDish().getFilterValue() == 0 ? false : true;
-            if (ok && o.getAmounts().getY() < o.getAmounts().getX()) {
-                String tableName = Strings.nullToEmpty(mainController.getRestaurant().getTableName(o.getTable()));
-                if (tableName.length() > 0) {
-                    tableName = " - " + tableName;
+            });
+            for (final Order o : pending) {
+                final boolean ok = filterEnabled && o.getDish().getFilterValue() == 0 ? false : true;
+                if (ok && o.getAmounts().getY() < o.getAmounts().getX()) {
+                    String tableName = Strings.nullToEmpty(mainController.getRestaurant().getTableName(o.getTable()));
+                    if (tableName.length() > 0) {
+                        tableName = " - " + tableName;
+                    }
+                    view.addUnprocessedOrder(o.getDish().getName(), o.getTable() + tableName,
+                            o.getAmounts().getX() - o.getAmounts().getY());
                 }
-                view.addUnprocessedOrder(o.getDish().getName(), o.getTable() + tableName,
-                        o.getAmounts().getX() - o.getAmounts().getY());
             }
         }
     }

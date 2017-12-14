@@ -32,20 +32,22 @@ public class MainViewJTable extends AbstractBenderJTable {
         final int table = Integer.parseInt(tableString.substring(0, tableString.indexOf(' ') != -1 ? tableString.indexOf(' ') : tableString.length()));
         double cost = 0;
         int filter = 0;
-        for (final IDish i : mainCtrl.getRestaurant().getOrders(table).keySet()) {
-            if (i.getName().equals(name)) {
-                cost = i.getPrice();
-                filter = i.getFilterValue();
+        synchronized (mainCtrl.getRestaurant()) {
+            for (final IDish i : mainCtrl.getRestaurant().getOrders(table).keySet()) {
+                if (i.getName().equals(name)) {
+                    cost = i.getPrice();
+                    filter = i.getFilterValue();
+                }
             }
-        }
-        final IDish item = new Dish(name, cost, filter);
-        if (button == MouseEvent.BUTTON1) {
-            try {
-                mainCtrl.getRestaurant().setOrderAsProcessed(table, item);
-                mainCtrl.getMainViewController().updateUnprocessedOrders();
-                mainCtrl.autoSave();
-            } catch (final Exception exc) {
-                mainCtrl.showMessageOnMainView(exc.getMessage());
+            final IDish item = new Dish(name, cost, filter);
+            if (button == MouseEvent.BUTTON1) {
+                try {
+                    mainCtrl.getRestaurant().setOrderAsProcessed(table, item);
+                    mainCtrl.getMainViewController().updateUnprocessedOrders();
+                    mainCtrl.autoSave();
+                } catch (final Exception exc) {
+                    mainCtrl.showMessageOnMainView(exc.getMessage());
+                }
             }
         }
     }

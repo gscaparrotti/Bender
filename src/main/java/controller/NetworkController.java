@@ -1,5 +1,6 @@
 package controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -128,18 +129,20 @@ public class NetworkController extends Thread {
                 final Object received = receiveObject();
                 sendObject(received);
                 closeSocket();
-            } catch (final IOException|IllegalStateException e) {
+            } catch (final IOException|IllegalStateException|IllegalArgumentException e) {
+                final String error = "Avviso: " + e + " - " + e.getMessage();
                 try {
                     closeSocket();
-                    showErrorMessage("Errore di comunicazione: " + e.getMessage() + ". La socket è stata chiusa.");
+                    showErrorMessage(error + ". La socket è stata chiusa.");
                 } catch (final IOException e1) {
-                    showErrorMessage("Errore di comunicazione: " + e.getMessage() + ". Non è stato possibile chiudere la socket: " + e1.getMessage());
+                    showErrorMessage(error + ". Non è stato possibile chiudere la socket: " + e1.getMessage());
                 }
             }
         }
         
         private void initializeSocket() throws IOException {
             socket.setSoTimeout(10000);
+            socket.setTcpNoDelay(true);
         }
         
         private Object receiveObject() throws IOException, IllegalStateException {
@@ -148,75 +151,70 @@ public class NetworkController extends Thread {
             try {
                 final Object clientInput = input.readObject();
                 if (clientInput != null) {
-                    if (clientInput instanceof String) {
-                        final String stringInput = (String) clientInput;
-                        if (stringInput.startsWith("GET TABLE")) {
-                            final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
-                            response = mainController.getRestaurant().getOrders(tableNmbr);
-                        } else if (stringInput.equals("GET PENDING ORDERS")) {
-                            final List<Order> pending = new LinkedList<>();
-                            for (int i = 1; i <= mainController.getRestaurant().getTablesAmount(); i++) {
-                                for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController
-                                        .getRestaurant().getOrders(i).entrySet()) {
-                                    if (entry.getValue().getX() > entry.getValue().getY()) {
-                                        pending.add(new Order(i, entry.getKey(), entry.getValue()));
+                    synchronized (mainController.getRestaurant()) {
+                        if (clientInput instanceof String) {
+                            final String stringInput = (String) clientInput;
+                            if (stringInput.startsWith("GET TABLE")) {
+                                final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
+                                response = mainController.getRestaurant().getOrders(tableNmbr);
+                            } else if (stringInput.equals("GET PENDING ORDERS")) {
+                                final List<Order> pending = new LinkedList<>();
+                                for (int i = 1; i <= mainController.getRestaurant().getTablesAmount(); i++) {
+                                    for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
+                                        if (entry.getValue().getX() > entry.getValue().getY()) {
+                                            pending.add(new Order(i, entry.getKey(), entry.getValue()));
+                                        }
                                     }
                                 }
+                                response = pending;
+                            } else if (stringInput.equals("GET AMOUNT")) {
+                                response = Integer.valueOf(mainController.getRestaurant().getTablesAmount());
+                            } else if (stringInput.equals("GET MENU")) {
+                                response = mainController.getMenu();
+                            } else if (stringInput.startsWith("RESET TABLE")) {
+                                final int tableNmbr = Integer.parseInt(stringInput.substring("RESET TABLE".length() + 1));
+                                mainController.getRestaurant().resetTable(tableNmbr);
+                                updateFinished(tableNmbr);
+                                response = "TABLE RESET CORRECTLY";
+                            } else if (stringInput.startsWith("GET NAMES")) {
+                                response = mainController.getRestaurant().getAllNames();
+                            } else if (stringInput.startsWith("SET NAME")) {
+                                final String[] strings = stringInput.split(" ", 4);
+                                final int tableNmbr = Integer.parseInt(strings[2]);
+                                mainController.getRestaurant().setTableName(tableNmbr, strings[3]);
+                                updateFinished(tableNmbr);
+                                response = "NAME SET CORRECTLY";
+                            } else if (stringInput.startsWith("REMOVE NAME")) {
+                                final int tableNmbr = Integer.parseInt(stringInput.substring("REMOVE NAME".length() + 1));
+                                mainController.getRestaurant().setTableName(tableNmbr, null);
+                                updateFinished(tableNmbr);
+                                response = "NAME SET CORRECTLY";
+                            } else if (stringInput.equals("CLOSE CONNECTION")) {
+                                response = "CLOSE CONNECTION";
+                            } else {
+                                throw new IllegalStateException("Ricevuti dati non validi: " + stringInput);
                             }
-                            response = pending;
-                        } else if (stringInput.equals("GET AMOUNT")) {
-                            response = Integer.valueOf(mainController.getRestaurant().getTablesAmount());
-                        } else if (stringInput.equals("GET MENU")) {
-                            response = mainController.getMenu();
-                        } else if (stringInput.startsWith("RESET TABLE")) {
-                            final int tableNmbr = Integer.parseInt(stringInput.substring("RESET TABLE".length() + 1));
-                            mainController.getRestaurant().resetTable(tableNmbr);
-                            updateFinished(tableNmbr);
-                            response = "TABLE RESET CORRECTLY";
-                        } else if (stringInput.startsWith("GET NAMES")) {
-                            response = mainController.getRestaurant().getAllNames();
-                        } else if (stringInput.startsWith("SET NAME")) {
-                            final String[] strings = stringInput.split(" ", 4);
-                            final int tableNmbr = Integer.parseInt(strings[2]);
-                            mainController.getRestaurant().setTableName(tableNmbr, strings[3]);
-                            updateFinished(tableNmbr);
-                            response = "NAME SET CORRECTLY";
-                        } else if (stringInput.startsWith("REMOVE NAME")) {
-                            final int tableNmbr = Integer.parseInt(stringInput.substring("REMOVE NAME".length() + 1));
-                            mainController.getRestaurant().setTableName(tableNmbr, null);
-                            updateFinished(tableNmbr);
-                            response = "NAME SET CORRECTLY";
-                        } else if (stringInput.equals("CLOSE CONNECTION")) {
-                            response = "CLOSE CONNECTION";
+                        } else if (clientInput instanceof Order) {
+                            final Order orderInput = (Order) clientInput;
+                            if (orderInput.getAmounts().getY() == 0 && orderInput.getAmounts().getX() > 0) {
+                                mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
+                                response = "ORDER ADDED CORRECTLY";
+                            } else if (orderInput.getAmounts().getX() < 0) {
+                                if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish())
+                                        && orderInput.getAmounts().getY() <= mainController.getRestaurant().getOrders(orderInput.getTable()).get(orderInput.getDish()).getX()) {
+                                    mainController.getRestaurant().removeOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getY());
+                                }
+                                response = "ORDER UPDATED CORRECTLY";
+                            } else {
+                                if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish())) {
+                                    mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
+                                }
+                                response = "ORDER UPDATED CORRECTLY";
+                            }
+                            updateFinished(orderInput.getTable());
                         } else {
-                            throw new IllegalStateException("Ricevuti dati non validi: " + stringInput);
+                            throw new IllegalStateException("Ricevuti dati non validi: " + clientInput);
                         }
-                    } else if (clientInput instanceof Order) {
-                        final Order orderInput = (Order) clientInput;
-                        if (orderInput.getAmounts().getY() == 0 && orderInput.getAmounts().getX() > 0) {
-                            mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(),
-                                    orderInput.getAmounts().getX());
-                            response = "ORDER ADDED CORRECTLY";
-                        } else if (orderInput.getAmounts().getX() < 0) {
-                            if (mainController.getRestaurant().getOrders(orderInput.getTable())
-                                    .containsKey(orderInput.getDish())
-                                    && orderInput.getAmounts().getY() <= mainController.getRestaurant()
-                                            .getOrders(orderInput.getTable()).get(orderInput.getDish()).getX()) {
-                                mainController.getRestaurant().removeOrder(orderInput.getTable(), orderInput.getDish(),
-                                        orderInput.getAmounts().getY());
-                            }
-                            response = "ORDER UPDATED CORRECTLY";
-                        } else {
-                            if (mainController.getRestaurant().getOrders(orderInput.getTable())
-                                    .containsKey(orderInput.getDish())) {
-                                mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(),
-                                        orderInput.getDish());
-                            }
-                            response = "ORDER UPDATED CORRECTLY";
-                        }
-                        updateFinished(orderInput.getTable());
-                    } else {
-                        throw new IllegalStateException("Ricevuti dati non validi: " + clientInput);
                     }
                 } else {
                     throw new IllegalStateException("Ricevuto un input nullo");
@@ -230,8 +228,13 @@ public class NetworkController extends Thread {
         }
         
         private void sendObject(final Object toSend) throws IOException {
-            final ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
-            output.writeObject(toSend);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            synchronized (mainController.getRestaurant()) {
+                final ObjectOutputStream ous = new ObjectOutputStream(baos);
+                ous.writeObject(toSend);
+                ous.close();
+            }
+            baos.writeTo(socket.getOutputStream());
         }
         
         private void closeSocket() throws IOException {

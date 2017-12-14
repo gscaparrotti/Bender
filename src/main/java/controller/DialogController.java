@@ -66,19 +66,21 @@ public class DialogController implements IDialogController {
     @Override
     public void commandOrdersViewUpdate(final int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
-            final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                    .iterator();
-            double bill = 0;
-            double effectiveBill = 0;
-            tableDialog.clearTab();
-            while (i.hasNext()) {
-                final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
-                tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
-                        entry.getValue().getY());
-                bill += entry.getKey().getPrice() * entry.getValue().getX();
-                effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+            synchronized (ctrl.getRestaurant()) {
+                final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
+                        .iterator();
+                double bill = 0;
+                double effectiveBill = 0;
+                tableDialog.clearTab();
+                while (i.hasNext()) {
+                    final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
+                    tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
+                            entry.getValue().getY());
+                    bill += entry.getKey().getPrice() * entry.getValue().getX();
+                    effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+                }
+                tableDialog.billUpdate(bill, effectiveBill);
             }
-            tableDialog.billUpdate(bill, effectiveBill);
         }
     }
 
@@ -196,17 +198,19 @@ public class DialogController implements IDialogController {
     }
 
     private boolean verifyRemaining(final int tableNumber) {
-        final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                .iterator();
-        boolean remaining = false;
-        while (i.hasNext()) {
-            final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
-            if (entry.getValue().getX() != entry.getValue().getY()) {
-                remaining = true;
-                break;
+        synchronized (ctrl.getRestaurant()) {
+            final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
+                    .iterator();
+            boolean remaining = false;
+            while (i.hasNext()) {
+                final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
+                if (entry.getValue().getX() != entry.getValue().getY()) {
+                    remaining = true;
+                    break;
+                }
             }
+            return remaining; 
         }
-        return remaining;
     }
 
     private void printBillFromJTable(final JTable c, final String up, final String down) {

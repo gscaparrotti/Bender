@@ -307,7 +307,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     
     @Override
     public void updateTableNames() {
-        synchronized(tablePanel.getTreeLock()) {
+        synchronized (tablePanel.getTreeLock()) {
             int tableNumber = 0;
             for (final Component c : tablePanel.getComponents()) {
                 if (c instanceof JButton) {
@@ -321,7 +321,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     }
     
     private String formattedName(final int tableNumber) {
-        return !ctrl.getRestaurant().getTableName(tableNumber).equals("") ? " - " + ctrl.getRestaurant().getTableName(tableNumber) : "";
+        final String name = ctrl.getRestaurant().getTableName(tableNumber);
+        return !name.equals("") ? " - " + name : "";
     }
 
     private void initLayout() {
