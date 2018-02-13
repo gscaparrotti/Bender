@@ -17,6 +17,7 @@ import javax.swing.SwingUtilities;
 
 import model.IDish;
 import model.Order;
+import model.OrderedDish;
 import model.Pair;
 
 /**
@@ -195,7 +196,12 @@ public class NetworkController extends Thread {
                                 throw new IllegalStateException("Ricevuti dati non validi: " + stringInput);
                             }
                         } else if (clientInput instanceof Order) {
-                            final Order orderInput = (Order) clientInput;
+                            Order orderInput = (Order) clientInput;
+                            if (orderInput.getDish() instanceof OrderedDish) {
+                                if (((OrderedDish) orderInput.getDish()).getTime().getTime() == 0L) {
+                                    orderInput = new Order(orderInput.getTable(), new OrderedDish(((OrderedDish) orderInput.getDish())), orderInput.getAmounts());
+                                }
+                            }
                             if (orderInput.getAmounts().getY() == 0 && orderInput.getAmounts().getX() > 0) {
                                 mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
                                 response = "ORDER ADDED CORRECTLY";
