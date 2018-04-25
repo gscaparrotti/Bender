@@ -153,6 +153,7 @@ public class DialogController implements IDialogController {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             try {
                 ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
+                tableDialog.clearErrors();
             } catch (Exception e) {
                 commandErrorUpdate(e);
             }
