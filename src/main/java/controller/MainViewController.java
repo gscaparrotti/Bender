@@ -104,4 +104,17 @@ public class MainViewController implements IMainViewController {
         }
     }
 
+    @Override
+    public void commandUpdateUnprocessedOrder(final int table, final IDish dish) {
+        try {
+            mainController.getRestaurant().setOrderAsProcessed(table, dish);
+            updateUnprocessedOrders();
+            mainController.autoSave();
+        } catch (final Exception exc) {
+            mainController.showMessageOnMainView(exc.getMessage());
+        }
+    }
+
+    
+    
 }

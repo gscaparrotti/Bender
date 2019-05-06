@@ -2,10 +2,8 @@ package controller;
 
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Map.Entry;
-
 import javax.swing.JTable;
 
 import view.ITableDialog;
@@ -67,13 +65,10 @@ public class DialogController implements IDialogController {
     public void commandOrdersViewUpdate(final int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             synchronized (ctrl.getRestaurant()) {
-                final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                        .iterator();
                 double bill = 0;
                 double effectiveBill = 0;
                 tableDialog.clearTab();
-                while (i.hasNext()) {
-                    final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
+                for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : ctrl.getRestaurant().getOrders(tableNumber).entrySet()) {
                     tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
                             entry.getValue().getY());
                     bill += entry.getKey().getPrice() * entry.getValue().getX();
@@ -200,11 +195,8 @@ public class DialogController implements IDialogController {
 
     private boolean verifyRemaining(final int tableNumber) {
         synchronized (ctrl.getRestaurant()) {
-            final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                    .iterator();
             boolean remaining = false;
-            while (i.hasNext()) {
-                final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
+            for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : ctrl.getRestaurant().getOrders(tableNumber).entrySet()) {
                 if (entry.getValue().getX() != entry.getValue().getY()) {
                     remaining = true;
                     break;
