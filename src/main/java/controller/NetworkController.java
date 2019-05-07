@@ -258,10 +258,14 @@ public class NetworkController extends Thread {
             SwingUtilities.invokeLater(new Runnable() {            
                 @Override
                 public void run() {
-                    mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
-                    mainController.getDialogController().updateTableName(tableNumber);
-                    mainController.getMainViewController().updateUnprocessedOrders();
-                    mainController.getMainViewController().updateTableNames();
+                    if (mainController.getDialogController() != null) {
+                        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
+                        mainController.getDialogController().updateTableName(tableNumber);
+                    }
+                    if (mainController.getMainViewController() != null) {
+                        mainController.getMainViewController().updateUnprocessedOrders();
+                        mainController.getMainViewController().updateTableNames();
+                    }
                     mainController.autoSave();
                 }
             });
