@@ -23,7 +23,8 @@ dependencies {
 	compile("com.github.gscaparrotti:BenderModel:develop-SNAPSHOT") {
 		changing = true	
 	}
-
+	testCompile 'junit:junit:4.12'
+	testCompile group: 'com.vmlens', name: 'concurrent-junit', version: '1.0.2'
     pmd(
         "net.sourceforge.pmd:pmd-core:$pmdVersion",
         "net.sourceforge.pmd:pmd-vm:$pmdVersion",
