@@ -288,7 +288,6 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         JOptionPane.showMessageDialog(this,
                 "Si è verificato un errore irreversibile: ".concat(message).concat(". L'applicazione verrà chiusa"),
                 "Errore Fatale", JOptionPane.ERROR_MESSAGE);
-        exit();
     }
 
     @Override
@@ -337,13 +336,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     private void quitHandler() {
         final int n = JOptionPane.showConfirmDialog(this, "Vuoi davvero uscire?", "Uscita", JOptionPane.YES_NO_OPTION);
         if (n == JOptionPane.YES_OPTION) {
-            exit();
+            MainController.getInstance().getNetworkController().stopListening();
+            this.dispose();
         }
     }
-
-    private void exit() {
-        MainController.getInstance().getNetworkController().stopListening();
-        System.exit(0);
-    }
-
 }

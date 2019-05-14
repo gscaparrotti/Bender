@@ -167,9 +167,10 @@ public final class MainController implements IMainController {
     public void showIrreversibleErrorOnMainView(final String message) {
         if (view == null || message == null) {
             System.out.println(message); //NOPMD
-            exit();
+            System.exit(1);
         } else {
             view.showIrreversibleError(message);
+            System.exit(2);
         }
     }
 
@@ -181,10 +182,6 @@ public final class MainController implements IMainController {
     @Override
     public IMainViewController getMainViewController() {
         return this.mvc;
-    }
-
-    private void exit() {
-        System.exit(0);
     }
 
     public NetworkController getNetworkController() {

@@ -4,11 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +23,7 @@ import model.Pair;
 public class NetworkController extends Thread {
 
     private final int port;
-    private boolean listen = true;
+    private ServerSocket welcomeSocket;
     private final IMainController mainController;
 
     /**
@@ -76,13 +72,19 @@ public class NetworkController extends Thread {
     @Override
     public void run() {
         try {
-            final ServerSocket welcomeSocket = new ServerSocket(port);
-            while (keepListening()) {
-                final ClientInteractor cl = new ClientInteractor(welcomeSocket.accept());
-                cl.start();
+            boolean listen = true;
+            this.welcomeSocket = new ServerSocket(port);
+            while (listen) {
+                try {
+                    final ClientInteractor cl = new ClientInteractor(welcomeSocket.accept());
+                    cl.start();
+                } catch (final SocketException e) {
+                    listen = false;
+                }
             }
             welcomeSocket.close();
         } catch (IOException e) {
+            this.stopListening();
             showErrorMessage("Errore nei servizi di rete: " + e.getMessage());
         }
     }
@@ -93,18 +95,20 @@ public class NetworkController extends Thread {
      * you must create a new NetworkController instead.
      */
     public void stopListening() {
-        this.listen = false;
-    }
-    
-    private boolean keepListening() {
-        return this.listen;
+        if (welcomeSocket != null && !welcomeSocket.isClosed()) {
+            try {
+                welcomeSocket.close();
+            } catch (IOException e) {
+                showErrorMessage("Impossibile chiudere la welcomeSocket: " + e.getMessage());
+            }
+        }
     }
     
     private void showErrorMessage(final String error) {
         SwingUtilities.invokeLater(new Runnable() {           
             @Override
             public void run() {
-                mainController.showMessageOnMainView(error);               
+                mainController.showIrreversibleErrorOnMainView(error);
             }
         });
     }
