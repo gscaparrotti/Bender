@@ -23,7 +23,7 @@ import model.Pair;
 public class NetworkController extends Thread {
 
     private final int port;
-    private ServerSocket welcomeSocket;
+    private boolean listen = true;
     private final IMainController mainController;
 
     /**
@@ -72,14 +72,15 @@ public class NetworkController extends Thread {
     @Override
     public void run() {
         try {
-            boolean listen = true;
-            this.welcomeSocket = new ServerSocket(port);
+            final ServerSocket welcomeSocket = new ServerSocket(port);
+            welcomeSocket.setSoTimeout(1000);
             while (listen) {
                 try {
                     final ClientInteractor cl = new ClientInteractor(welcomeSocket.accept());
                     cl.start();
-                } catch (final SocketException e) {
-                    listen = false;
+                } catch (final SocketTimeoutException e) {
+                    //this is normal, it's used to exit from the blocking method to check if listening should continue.
+                    //Blame Java for not having a better way to do it.
                 }
             }
             welcomeSocket.close();
@@ -95,13 +96,7 @@ public class NetworkController extends Thread {
      * you must create a new NetworkController instead.
      */
     public void stopListening() {
-        if (welcomeSocket != null && !welcomeSocket.isClosed()) {
-            try {
-                welcomeSocket.close();
-            } catch (IOException e) {
-                showErrorMessage("Impossibile chiudere la welcomeSocket: " + e.getMessage());
-            }
-        }
+        this.listen = false;
     }
     
     private void showErrorMessage(final String error) {
