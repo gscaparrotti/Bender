@@ -108,6 +108,15 @@ public class NetworkController extends Thread {
         });
     }
 
+    private void showMessage(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                mainController.showMessageOnMainView(message);
+            }
+        });
+    }
+
     private class ClientInteractor extends Thread {
 
         private final Socket socket;
@@ -138,7 +147,7 @@ public class NetworkController extends Thread {
                 final String error = "Avviso: " + e + " - " + e.getMessage();
                 try {
                     closeSocket();
-                    showErrorMessage(error + ". La socket è stata chiusa.");
+                    showMessage(error + ". La socket è stata chiusa.");
                 } catch (final IOException e1) {
                     showErrorMessage(error + ". Non è stato possibile chiudere la socket: " + e1.getMessage());
                 }
