@@ -5,18 +5,13 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
+import model.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import com.anarsoft.vmlens.concurrent.junit.TestUtil;
 import controller.IMainController;
 import controller.MainController;
-import model.IDish;
-import model.Menu;
-import model.Order;
-import model.OrderedDish;
-import model.Pair;
-import model.Restaurant;
 
 public class ConcurrencyTest {
     
@@ -46,7 +41,7 @@ public class ConcurrencyTest {
         TestUtil.runMultithreaded(() -> {
             synchronized (mainController.getRestaurant()) {
                 for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(1).entrySet()) {
-                    entry.getValue().setX(entry.getValue().getX() + 1);
+                    mainController.getRestaurant().addOrder(1, entry.getKey(), 1);
                 }
             }
         }, THREAD_COUNT);

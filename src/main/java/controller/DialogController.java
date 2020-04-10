@@ -121,6 +121,7 @@ public class DialogController implements IDialogController {
     public void commandSetTableName(final int table, final String name) {
         ctrl.getRestaurant().setTableName(table, name);
         updateTableName(table);
+        updateStatus(table);
         ctrl.autoSave();
     }
 
