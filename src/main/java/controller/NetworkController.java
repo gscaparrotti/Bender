@@ -1,23 +1,19 @@
 package controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.SwingUtilities;
 
 import model.IDish;
-import model.IRestaurant;
 import model.Order;
+import model.OrderedDish;
 import model.Pair;
 
 /**
@@ -28,7 +24,6 @@ public class NetworkController extends Thread {
 
     private final int port;
     private boolean listen = true;
-    private final Set<Socket> sockets = ConcurrentHashMap.newKeySet();
     private final IMainController mainController;
 
     /**
@@ -73,54 +68,28 @@ public class NetworkController extends Thread {
             throw new IllegalArgumentException();
         }
     }
-    
-    @Override
-    protected void finalize() throws Throwable {
-        for (final Socket s : sockets) {
-            s.close();
-        }
-        sockets.clear();
-        super.finalize();
-    }
 
     @Override
     public void run() {
         try {
             final ServerSocket welcomeSocket = new ServerSocket(port);
+            welcomeSocket.setSoTimeout(1000);
             while (listen) {
-                final Socket socket = welcomeSocket.accept();
-                final NetClientListener cl = new NetClientListener(socket);
-                sockets.add(socket);
-                //System.out.println(sockets.size());
-                cl.start();
+                try {
+                    final ClientInteractor cl = new ClientInteractor(welcomeSocket.accept());
+                    cl.start();
+                } catch (final SocketTimeoutException e) {
+                    //this is normal, it's used to exit from the blocking method to check if listening should continue.
+                    //Blame Java for not having a better way to do it.
+                }
             }
             welcomeSocket.close();
-            for (final Socket s : sockets) {
-                s.close();
-                sockets.remove(s);
-            }
         } catch (IOException e) {
-            mainController.showMessageOnMainView("Errore nei servizi di rete: " + e.getMessage());
+            this.stopListening();
+            showErrorMessage("Errore nei servizi di rete: " + e.getMessage());
         }
     }
 
-    /**
-     * @param restaurant the object which contains all the ordered dishes.
-     * @param table the table whose orders you want to dispatch or 0 if you want to send all the orders.
-     */
-    public void dispatchOrders(final IRestaurant restaurant, final int table) {
-        if (restaurant == null || table < 0) {
-            throw new IllegalArgumentException();
-        }
-        if (table == 0) {
-            for (int i = 0; i < mainController.getRestaurant().getTablesAmount(); i++) {
-                for (final Socket s : sockets) {
-                    final NetClientSender sender = new NetClientSender(s, i);
-                    sender.start();
-                }
-            }
-        }
-    }
     /**
      * Closes the welcome socket and all the existing sockets. 
      * After you call this method, you cannot restart listening;
@@ -129,14 +98,30 @@ public class NetworkController extends Thread {
     public void stopListening() {
         this.listen = false;
     }
+    
+    private void showErrorMessage(final String error) {
+        SwingUtilities.invokeLater(new Runnable() {           
+            @Override
+            public void run() {
+                mainController.showIrreversibleErrorOnMainView(error);
+            }
+        });
+    }
 
+    private void showMessage(final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                mainController.showMessageOnMainView(message);
+            }
+        });
+    }
 
-    private class NetClientListener extends Thread {
+    private class ClientInteractor extends Thread {
 
         private final Socket socket;
-        private ObjectInputStream input;
 
-        NetClientListener(final Socket socket) {
+        ClientInteractor(final Socket socket) {
             super();
             if (socket == null) {
                 throw new IllegalArgumentException();
@@ -149,14 +134,44 @@ public class NetworkController extends Thread {
         public void run() {
             super.run();
             try {
-                this.input = new ObjectInputStream(socket.getInputStream());
-                final Object clientInput = input.readObject();
+                initializeSocket();
+                final Object received = receiveObject();
+                final byte[] toSend;
+                synchronized (mainController.getRestaurant()) {
+                    final Object response = decodeInputAndGenerateResponse(received);
+                    toSend = serializeResponse(response);
+                }
+                sendSerializedResponse(toSend);
+                closeSocket();
+            } catch (final IOException|IllegalStateException|IllegalArgumentException|ClassNotFoundException e) {
+                final String error = "Avviso: " + e + " - " + e.getMessage();
+                try {
+                    closeSocket();
+                    showMessage(error + ". La socket è stata chiusa.");
+                } catch (final IOException e1) {
+                    showErrorMessage(error + ". Non è stato possibile chiudere la socket: " + e1.getMessage());
+                }
+            }
+        }
+        
+        private void initializeSocket() throws IOException {
+            socket.setSoTimeout(10000);
+            socket.setTcpNoDelay(true);
+        }
+        
+        private Object receiveObject() throws ClassNotFoundException, IOException {
+            return new ObjectInputStream(socket.getInputStream()).readObject();
+        }
+        
+        private Object decodeInputAndGenerateResponse(final Object clientInput) {
+            Object response;
+            try {
                 if (clientInput != null) {
                     if (clientInput instanceof String) {
                         final String stringInput = (String) clientInput;
                         if (stringInput.startsWith("GET TABLE")) {
                             final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
-                            new NetClientSender(socket, mainController.getRestaurant().getOrders(tableNmbr)).start();
+                            response = mainController.getRestaurant().getOrders(tableNmbr);
                         } else if (stringInput.equals("GET PENDING ORDERS")) {
                             final List<Order> pending = new LinkedList<>();
                             for (int i = 1; i <= mainController.getRestaurant().getTablesAmount(); i++) {
@@ -166,113 +181,102 @@ public class NetworkController extends Thread {
                                     }
                                 }
                             }
-                            new NetClientSender(socket, pending).start();
+                            response = pending;
                         } else if (stringInput.equals("GET AMOUNT")) {
-                            new NetClientSender(socket, Integer.valueOf(mainController.getRestaurant().getTablesAmount())).start();
+                            response = Integer.valueOf(mainController.getRestaurant().getTablesAmount());
                         } else if (stringInput.equals("GET MENU")) {
-                            new NetClientSender(socket, mainController.getMenu()).start();
+                            response = mainController.getMenu();
                         } else if (stringInput.startsWith("RESET TABLE")) {
                             final int tableNmbr = Integer.parseInt(stringInput.substring("RESET TABLE".length() + 1));
                             mainController.getRestaurant().resetTable(tableNmbr);
                             updateFinished(tableNmbr);
-                            new NetClientSender(socket, "TABLE RESET CORRECTLY").start();
+                            response = "TABLE RESET CORRECTLY";
+                        } else if (stringInput.startsWith("GET NAMES")) {
+                            response = mainController.getRestaurant().getAllNames();
+                        } else if (stringInput.startsWith("SET NAME")) {
+                            final String[] strings = stringInput.split(" ", 4);
+                            final int tableNmbr = Integer.parseInt(strings[2]);
+                            mainController.getRestaurant().setTableName(tableNmbr, strings[3]);
+                            updateFinished(tableNmbr);
+                            response = "NAME SET CORRECTLY";
+                        } else if (stringInput.startsWith("REMOVE NAME")) {
+                            final int tableNmbr = Integer.parseInt(stringInput.substring("REMOVE NAME".length() + 1));
+                            mainController.getRestaurant().setTableName(tableNmbr, null);
+                            updateFinished(tableNmbr);
+                            response = "NAME SET CORRECTLY";
                         } else if (stringInput.equals("CLOSE CONNECTION")) {
-                            new NetClientSender(socket, "CLOSE CONNECTION").start();
+                            response = "CLOSE CONNECTION";
                         } else {
-                            closeOnError();
+                            throw new IllegalStateException("Ricevuti dati non validi: " + stringInput);
                         }
                     } else if (clientInput instanceof Order) {
-                        final Order orderInput = (Order) clientInput;
+                        Order orderInput = (Order) clientInput;
+                        if (orderInput.getDish() instanceof OrderedDish) {
+                            if (((OrderedDish) orderInput.getDish()).getTime().getTime() == 0L) {
+                                orderInput = new Order(orderInput.getTable(), new OrderedDish(((OrderedDish) orderInput.getDish())), orderInput.getAmounts());
+                            }
+                        }
                         if (orderInput.getAmounts().getY() == 0 && orderInput.getAmounts().getX() > 0) {
                             mainController.getRestaurant().addOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getX());
-                            new NetClientSender(socket, "ORDER ADDED CORRECTLY").start();
+                            response = "ORDER ADDED CORRECTLY";
                         } else if (orderInput.getAmounts().getX() < 0) {
-                            if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish()) &&
-                                    orderInput.getAmounts().getY() <= mainController.getRestaurant().getOrders(orderInput.getTable()).get(orderInput.getDish()).getX()) {
+                            if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish())
+                                    && orderInput.getAmounts().getY() <= mainController.getRestaurant().getOrders(orderInput.getTable()).get(orderInput.getDish()).getX()) {
                                 mainController.getRestaurant().removeOrder(orderInput.getTable(), orderInput.getDish(), orderInput.getAmounts().getY());
                             }
-                            new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
+                            response = "ORDER UPDATED CORRECTLY";
                         } else {
-                            mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
-                            new NetClientSender(socket, "ORDER UPDATED CORRECTLY").start();
+                            if (mainController.getRestaurant().getOrders(orderInput.getTable()).containsKey(orderInput.getDish())) {
+                                mainController.getRestaurant().setOrderAsProcessed(orderInput.getTable(), orderInput.getDish());
+                            }
+                            response = "ORDER UPDATED CORRECTLY";
                         }
                         updateFinished(orderInput.getTable());
                     } else {
-                        closeOnError();
+                        throw new IllegalStateException("Ricevuti dati non validi: " + clientInput);
                     }
                 } else {
-                    closeOnError();
+                    throw new IllegalStateException("Ricevuto un input nullo");
                 }
-            } catch (final IOException e) {
-                //e.printStackTrace();
-                closeOnError();
             } catch (final NumberFormatException e1) {
-                mainController.showMessageOnMainView("Il client " + socket + " ha richiesto gli ordini"
-                        + "di un tavolo non valido.");
-                closeOnError();
-            } catch (final ClassNotFoundException e2) {
-                mainController.showMessageOnMainView("Il client " + socket + " ha inviato dati non validi.");
-                closeOnError();
+                throw new IllegalStateException("Il client " + socket + " ha richiesto gli ordini" + "di un tavolo non valido.");
             }
+            return response;
         }
         
-        private void closeOnError() {
-            try {
-                socket.close();
-            } catch (final IOException e) {
-                //e.printStackTrace();
-                mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e.getMessage() + e.toString());
-            } finally {
-                sockets.remove(socket);
-            }
-            //mainController.showMessageOnMainView("Il client " + socket + " si è disconnesso.");
+        private byte[] serializeResponse(final Object response) throws IOException {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final ObjectOutputStream ous = new ObjectOutputStream(baos);
+            ous.writeObject(response);
+            final byte[] serializedObject = baos.toByteArray();
+            ous.close();
+            return serializedObject;
+            
         }
-    }
-
-    private void updateFinished(final int tableNumber) {
-        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
-        mainController.getMainViewController().updateUnprocessedOrders();
-        mainController.autoSave();
-    }
-
-    private final class NetClientSender extends Thread {
-
-        private final Socket socket;
-        private ObjectOutputStream output;
-        private final Object toSend;
-
-        NetClientSender(final Socket socket, final Object toSend) {
-            super();
-            if (socket == null || toSend == null) {
-                throw new IllegalArgumentException();
-            }
-            this.socket = socket;
-            this.toSend = toSend;
-            try {
-                this.output = new ObjectOutputStream(socket.getOutputStream());
-            } catch (IOException e) {
-                mainController.showIrreversibleErrorOnMainView("Impossibile ottenere l'outputStream: " + e.toString());
-            }
+        
+        private void sendSerializedResponse(final byte[] toSend) throws IOException {
+            socket.getOutputStream().write(toSend);
         }
-
-        @Override
-        public void run() {
-            super.run();
-            try {
-                output.writeObject(toSend);
-                output.close();
-                socket.close();
-            } catch (final Exception e) {
-                try {
-                    socket.close();
-                } catch (final IOException e1) {
-                    //e1.printStackTrace();
-                    mainController.showMessageOnMainView("Errore nella chiusura della socket" + socket + e1.toString());
+        
+        private void closeSocket() throws IOException {
+            socket.close();
+        }
+        
+        private void updateFinished(final int tableNumber) {
+            SwingUtilities.invokeLater(new Runnable() {            
+                @Override
+                public void run() {
+                    if (mainController.getDialogController() != null) {
+                        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
+                        mainController.getDialogController().updateTableName(tableNumber);
+                    }
+                    if (mainController.getMainViewController() != null) {
+                        mainController.getMainViewController().updateUnprocessedOrders();
+                        mainController.getMainViewController().updateTableNames();
+                    }
+                    mainController.autoSave();
                 }
-                mainController.showMessageOnMainView("Errore di rete: " + socket + e.toString());
-            } finally {
-                sockets.remove(socket);
-            }
+            });
         }
     }
 }

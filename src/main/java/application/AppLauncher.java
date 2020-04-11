@@ -2,9 +2,8 @@ package application;
 
 import java.awt.Color;
 
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import model.Menu;
 import model.Restaurant;
@@ -37,18 +36,20 @@ public final class AppLauncher {
      */
     public static void main(final String[] args) {
         final IMainController ctrl = MainController.getInstance();
-        try {
-            final RestaurantView v = new RestaurantView();
-            ctrl.setModel(new Restaurant(), new Menu());
-            ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
-            final NetworkController net = new NetworkController(ctrl, 6789);
-            setLookAndFeel();
-            v.buildView();
-            v.setVisible(true);
-            net.start();
-        } catch (final Exception e) {
-            ctrl.showIrreversibleErrorOnMainView(e.getMessage());
-        }
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    final RestaurantView v = new RestaurantView();
+                    ctrl.setModel(new Restaurant(), new Menu());
+                    ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
+                    final NetworkController net = new NetworkController(ctrl, 6789);
+                    setLookAndFeel();
+                    v.buildView();
+                    v.setVisible(true);
+                    net.start();
+                } catch (final Exception e) {
+                    ctrl.showIrreversibleErrorOnMainView(e.getMessage());
+                }
+            });
     }
 
     //CHECKSTYLE:OFF

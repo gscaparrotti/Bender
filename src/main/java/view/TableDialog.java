@@ -25,7 +25,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -50,11 +49,12 @@ public class TableDialog extends JDialog implements ITableDialog {
     private static final String CURRENCY_SYMBOL = " €";
     private static final String STRING_SEPARATOR = " - ";
     private static final int[] INSETS = { 0, 0, 5, 0 };
-    private static final int[] SIZE = { 650, 373 };
+    private static final int[] SIZE = { 650, 450 };
     private final JLabel errorLabel = new JLabel();
     private final JLabel lblContoTotale = new JLabel(BILL_TEXT);
     private final DialogJTable orders;
     private final int tableNumber;
+    private JLabel lblGestioneDegliOrdini;
     private boolean isManual;
     private IDialogController ctrl;
     private final IMainController mainCtrl; // NOPMD
@@ -84,40 +84,60 @@ public class TableDialog extends JDialog implements ITableDialog {
 
     // CHECKSTYLE DISABLE MagicNumber FOR 130 LINES
     private void buildView() {
-        this.setTitle("Gestione del tavolo n° " + tableNumber);
+        this.setTitle("Gestione del tavolo n° " + tableNumber + formattedName());
         this.setResizable(true);
         setBounds(100, 100, SIZE[0], SIZE[1]);
         final GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[] { 0, 0 };
-        gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-        gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        gridBagLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                 Double.MIN_VALUE };
         getContentPane().setLayout(gridBagLayout);
 
-        final JLabel lblGestioneDegliOrdini = new JLabel(
-                "GESTIONE DEGLI ORDINI PER IL TAVOLO N° ".concat(Integer.toString(tableNumber)));
+        lblGestioneDegliOrdini = new JLabel(
+                "GESTIONE DEGLI ORDINI PER IL TAVOLO N° " + Integer.toString(tableNumber) + formattedName());
         lblGestioneDegliOrdini.setFont(lblGestioneDegliOrdini.getFont().deriveFont(Font.BOLD, 16));
         final GridBagConstraints gbcLblGestioneDegliOrdini = new GridBagConstraints();
         gbcLblGestioneDegliOrdini.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcLblGestioneDegliOrdini.gridx = 0;
         gbcLblGestioneDegliOrdini.gridy = 0;
         getContentPane().add(lblGestioneDegliOrdini, gbcLblGestioneDegliOrdini);
-
+        
+        final JTextField tableNameTextField = new JTextField();
+        final JLabel tableNameLabel = new JLabel("Nuovo nome del tavolo: ");    
+        final JButton buttonTableName = new JButton("Imposta nome");
+        buttonTableName.addActionListener(new ActionListener() {          
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                ctrl.commandSetTableName(tableNumber, tableNameTextField.getText());
+            }
+        });
+        final JPanel panelTableName = new JPanel(new BorderLayout(5, 0));
+        panelTableName.add(tableNameLabel, BorderLayout.WEST);
+        panelTableName.add(buttonTableName, BorderLayout.EAST);
+        panelTableName.add(tableNameTextField, BorderLayout.CENTER);
+        final GridBagConstraints gbcTableName = new GridBagConstraints();
+        gbcTableName.insets = new Insets(INSETS[0], 11, 10, 7);
+        gbcTableName.gridx = 0;
+        gbcTableName.gridy = 1;
+        gbcTableName.fill = GridBagConstraints.HORIZONTAL;
+        getContentPane().add(panelTableName, gbcTableName);
+        
         final JLabel lblSelezionareIlPiatto = new JLabel(
                 "Selezionare il piatto da aggiungere, quindi premere AGGIUNGI");
         final GridBagConstraints gbcLblSelezionareIlPiatto = new GridBagConstraints();
         gbcLblSelezionareIlPiatto.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcLblSelezionareIlPiatto.gridx = 0;
-        gbcLblSelezionareIlPiatto.gridy = 1;
+        gbcLblSelezionareIlPiatto.gridy = 2;
         getContentPane().add(lblSelezionareIlPiatto, gbcLblSelezionareIlPiatto);
-
+        
         final JPanel panel1 = new JPanel();
         final GridBagConstraints gbcPanel1 = new GridBagConstraints();
         gbcPanel1.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcPanel1.fill = GridBagConstraints.HORIZONTAL;
         gbcPanel1.gridx = 0;
-        gbcPanel1.gridy = 2;
+        gbcPanel1.gridy = 3;
         getContentPane().add(panel1, gbcPanel1);
 
         final JComboBox<IDish> comboBox = new JComboBox<>(ctrl.getMenu()); // ctrl.getMenu()
@@ -185,7 +205,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         final GridBagConstraints gbcLblPiattiAttualmenteOrdinati = new GridBagConstraints();
         gbcLblPiattiAttualmenteOrdinati.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcLblPiattiAttualmenteOrdinati.gridx = 0;
-        gbcLblPiattiAttualmenteOrdinati.gridy = 3;
+        gbcLblPiattiAttualmenteOrdinati.gridy = 4;
         getContentPane().add(lblPiattiAttualmenteOrdinati, gbcLblPiattiAttualmenteOrdinati);
 
         orders.setToolTipText("Tasto sinistro per indicare come evaso, tasto destro per eliminare un piatto");
@@ -198,7 +218,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         gbcScroll.gridheight = 7;
         gbcScroll.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcScroll.gridx = 0;
-        gbcScroll.gridy = 4;
+        gbcScroll.gridy = 5;
         getContentPane().add(scroll, gbcScroll);
         ctrl.commandOrdersViewUpdate(tableNumber);
 
@@ -207,12 +227,11 @@ public class TableDialog extends JDialog implements ITableDialog {
         gbcPanel2.insets = new Insets(INSETS[0], INSETS[1], INSETS[2], INSETS[3]);
         gbcPanel2.fill = GridBagConstraints.BOTH;
         gbcPanel2.gridx = 0;
-        gbcPanel2.gridy = 11;
+        gbcPanel2.gridy = 12;
         getContentPane().add(panel2, gbcPanel2);
         panel2.setLayout(new BorderLayout(0, 0));
         panel2.add(lblContoTotale, BorderLayout.WEST);
         errorLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 11));
-
         panel2.add(errorLabel, BorderLayout.EAST);
 
         final JPanel panel = new JPanel();
@@ -220,7 +239,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         gbcPanel.anchor = GridBagConstraints.SOUTH;
         gbcPanel.fill = GridBagConstraints.HORIZONTAL;
         gbcPanel.gridx = 0;
-        gbcPanel.gridy = 12;
+        gbcPanel.gridy = 13;
         getContentPane().add(panel, gbcPanel);
 
         this.addWindowListener(new WindowAdapter() {
@@ -283,25 +302,25 @@ public class TableDialog extends JDialog implements ITableDialog {
     public void clearTab() {
         orders.reset();
     }
+    
+    @Override
+    public void updateTableNameInDialog() {
+        this.setTitle("Gestione del tavolo n° " + tableNumber + formattedName());
+        lblGestioneDegliOrdini.setText("GESTIONE DEGLI ORDINI PER IL TAVOLO N° " + Integer.toString(tableNumber) + formattedName());
+    }
 
     @Override
     public void showError(final Exception e) {
-        SwingUtilities.invokeLater(new Runnable() {  
-            @Override
-            public void run() {
-                errorLabel.setText(e.getMessage());
-            }
-        });
+        errorLabel.setText(e.getMessage());
     }
 
     @Override
     public void clearErrors() {
-        SwingUtilities.invokeLater(new Runnable() {     
-            @Override
-            public void run() {
-                errorLabel.setText("");       
-            }
-        });
+        errorLabel.setText("");       
+    }
+    
+    private String formattedName() {
+        return !ctrl.getTableName(tableNumber).equals("") ? STRING_SEPARATOR + ctrl.getTableName(tableNumber) : "";
     }
 
     private void addRowToTableModel(final Object... obj) {

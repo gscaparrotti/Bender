@@ -2,6 +2,7 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -249,10 +250,11 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         newButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                final TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText()));
+                final TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText().substring(0, newButton.getText().indexOf(" ") != -1 ? newButton.getText().indexOf(" ") : newButton.getText().length())));
                 ctrl.getDialogController().setView(tableDialog);
                 tableDialog.setVisible(true);
                 viewCtrl.updateUnprocessedOrders();
+                viewCtrl.updateTableNames();
             }
         });
         if (columns == 0) {
@@ -265,6 +267,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
             tablecnst.gridx = 0;
         }
         validate();
+        updateTableNames();
     }
 
     @Override
@@ -285,7 +288,6 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         JOptionPane.showMessageDialog(this,
                 "Si è verificato un errore irreversibile: ".concat(message).concat(". L'applicazione verrà chiusa"),
                 "Errore Fatale", JOptionPane.ERROR_MESSAGE);
-        exit();
     }
 
     @Override
@@ -294,12 +296,32 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     }
 
     @Override
-    public void addUnprocessedOrder(final String name, final int table, final int quantity) {
+    public void addUnprocessedOrder(final String name, final String table, final int quantity) {
         toBeServed.addRow(new Object[] { name, table, quantity });
     }
     
     public boolean isFilterEnabled() {
         return filter;
+    }
+    
+    @Override
+    public void updateTableNames() {
+        synchronized (tablePanel.getTreeLock()) {
+            int tableNumber = 0;
+            for (final Component c : tablePanel.getComponents()) {
+                if (c instanceof JButton) {
+                    tableNumber++;
+                    final String name = formattedName(tableNumber);
+                    final JButton b = (JButton) c;
+                    b.setText(tableNumber + name);
+                }
+            }
+        }
+    }
+    
+    private String formattedName(final int tableNumber) {
+        final String name = ctrl.getRestaurant().getTableName(tableNumber);
+        return !name.equals("") ? " - " + name : "";
     }
 
     private void initLayout() {
@@ -314,13 +336,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
     private void quitHandler() {
         final int n = JOptionPane.showConfirmDialog(this, "Vuoi davvero uscire?", "Uscita", JOptionPane.YES_NO_OPTION);
         if (n == JOptionPane.YES_OPTION) {
-            exit();
+            MainController.getInstance().getNetworkController().stopListening();
+            this.dispose();
         }
     }
-
-    private void exit() {
-        MainController.getInstance().getNetworkController().stopListening();
-        System.exit(0);
-    }
-
 }

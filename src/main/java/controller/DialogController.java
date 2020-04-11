@@ -2,10 +2,8 @@ package controller;
 
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Map.Entry;
-
 import javax.swing.JTable;
 
 import view.ITableDialog;
@@ -66,19 +64,18 @@ public class DialogController implements IDialogController {
     @Override
     public void commandOrdersViewUpdate(final int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
-            final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                    .iterator();
-            double bill = 0;
-            double effectiveBill = 0;
-            tableDialog.clearTab();
-            while (i.hasNext()) {
-                final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
-                tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
-                        entry.getValue().getY());
-                bill += entry.getKey().getPrice() * entry.getValue().getX();
-                effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+            synchronized (ctrl.getRestaurant()) {
+                double bill = 0;
+                double effectiveBill = 0;
+                tableDialog.clearTab();
+                for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : ctrl.getRestaurant().getOrders(tableNumber).entrySet()) {
+                    tableDialog.addOrderToView(entry.getKey().getName(), entry.getKey().getPrice(), entry.getValue().getX(),
+                            entry.getValue().getY());
+                    bill += entry.getKey().getPrice() * entry.getValue().getX();
+                    effectiveBill += entry.getKey().getPrice() * entry.getValue().getY();
+                }
+                tableDialog.billUpdate(bill, effectiveBill);
             }
-            tableDialog.billUpdate(bill, effectiveBill);
         }
     }
 
@@ -119,6 +116,26 @@ public class DialogController implements IDialogController {
             updateStatus(tableNumber);
         }
     }
+    
+    @Override
+    public void commandSetTableName(final int table, final String name) {
+        ctrl.getRestaurant().setTableName(table, name);
+        updateTableName(table);
+        updateStatus(table);
+        ctrl.autoSave();
+    }
+
+    @Override
+    public String getTableName(final int table) {
+        return ctrl.getRestaurant().getTableName(table);
+    }
+    
+    @Override
+    public void updateTableName(final int table) {
+        if(tableDialog != null && tableDialog.getTable() == table) {
+            tableDialog.updateTableNameInDialog();
+        }
+    }
 
     /*
      * (non-Javadoc)
@@ -132,6 +149,7 @@ public class DialogController implements IDialogController {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             try {
                 ctrl.getRestaurant().setOrderAsProcessed(tableNumber, item);
+                tableDialog.clearErrors();
             } catch (Exception e) {
                 commandErrorUpdate(e);
             }
@@ -167,6 +185,7 @@ public class DialogController implements IDialogController {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             ctrl.getRestaurant().resetTable(tableNumber);
             updateStatus(tableNumber);
+            updateTableName(tableNumber);
         }
     }
 
@@ -176,17 +195,16 @@ public class DialogController implements IDialogController {
     }
 
     private boolean verifyRemaining(final int tableNumber) {
-        final Iterator<Entry<IDish, Pair<Integer, Integer>>> i = ctrl.getRestaurant().getOrders(tableNumber).entrySet()
-                .iterator();
-        boolean remaining = false;
-        while (i.hasNext()) {
-            final Entry<IDish, Pair<Integer, Integer>> entry = i.next();
-            if (entry.getValue().getX() != entry.getValue().getY()) {
-                remaining = true;
-                break;
+        synchronized (ctrl.getRestaurant()) {
+            boolean remaining = false;
+            for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : ctrl.getRestaurant().getOrders(tableNumber).entrySet()) {
+                if (entry.getValue().getX() != entry.getValue().getY()) {
+                    remaining = true;
+                    break;
+                }
             }
+            return remaining; 
         }
-        return remaining;
     }
 
     private void printBillFromJTable(final JTable c, final String up, final String down) {

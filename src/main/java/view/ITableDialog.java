@@ -43,6 +43,13 @@ public interface ITableDialog {
      * Erases all the entries from the tab containing all the orders.
      */
     void clearTab();
+    
+    /**
+     * Updates the table name displayed in this dialog.
+     * 
+     * @param name
+     */
+    void updateTableNameInDialog();
 
     /**
      * @param e

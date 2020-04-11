@@ -78,6 +78,25 @@ public interface IDialogController {
      *            table, in the specified amount.
      */
     void commandRemove(int tableNumber, IDish item, int amount);
+    
+    /**
+     * @param table the table
+     * @param name the new name for the table or null if you want to remove the name
+     */
+    void commandSetTableName(int table, String name);
+    
+    /**
+     * @param table
+     * @return the name associated to this table
+     */
+    String getTableName(int table);
+    
+    /**
+     * Updates the displayed name of the given table
+     * 
+     * @param table
+     */
+    void updateTableName(int table);
 
     /**
      * @param tableNumber
