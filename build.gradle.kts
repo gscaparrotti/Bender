@@ -21,3 +21,15 @@ dependencies {
 	testImplementation("junit:junit:4.12")
 	testImplementation("com.vmlens:concurrent-junit:1.0.2")
 }
+
+tasks.register<Jar>("fatJar") {
+	manifest {
+		attributes(mapOf(
+			"Implementation-Title" to "Bender",
+			"Main-Class" to "application.AppLauncher"
+		))
+	}
+	archiveBaseName.set("${rootProject.name}-redist")
+	from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+	with(tasks.jar.get() as CopySpec)
+}
