@@ -1,5 +1,7 @@
 # Bender - Gestionale per bar
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e004e51cf1b84cfea7ab9b098245937e)](https://www.codacy.com/manual/gscaparrotti/Bender?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gscaparrotti/Bender&amp;utm_campaign=Badge_Grade)
+
 ![Alchemist logo](https://raw.githubusercontent.com/gscaparrotti/Bender/master/res/icon.png)
 
 Bender è un gestionale per bar gratuito e open source. 
