@@ -69,7 +69,7 @@ public class DialogController implements IDialogController {
      * @see application.controller.IDialogController#commandOrdersViewUpdate(int)
      */
     @Override
-    public void commandOrdersViewUpdate(final int tableNumber) {
+    public void updateOrdersInView(final int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             synchronized (ctrl.getRestaurant()) {
                 double bill = 0;
@@ -83,6 +83,13 @@ public class DialogController implements IDialogController {
                 }
                 tableDialog.billUpdate(bill, effectiveBill);
             }
+        }
+    }
+
+    @Override
+    public void updateOrdersInView() {
+        if (tableDialog != null) {
+            updateOrdersInView(tableDialog.getTable());
         }
     }
 
@@ -127,24 +134,31 @@ public class DialogController implements IDialogController {
     @Override
     public void commandSetTableName(final int table, final String name) {
         ctrl.getRestaurant().setTableName(table, name);
-        updateTableName(table);
+        updateTableNameInView(table);
         updateStatus(table);
         ctrl.autoSave();
     }
 
     @Override
-    public String getTableName(final int table) {
+    public String commandGetTableName(final int table) {
         return ctrl.getRestaurant().getTableName(table);
     }
 
     @Override
-    public SortedSet<String> getAllTableNames(final int table) {
+    public SortedSet<String> commandGetAllTableNames(final int table) {
         return ifBodyNotNull(ctrl(RestaurantController.class).getCustomers(table), customers -> customers.stream().map(Customer::getName).collect(Collectors.toCollection(TreeSet::new)), TreeSet::new);
     }
 
     @Override
-    public void updateTableName(final int table) {
+    public void updateTableNameInView(final int table) {
         if(tableDialog != null && tableDialog.getTable() == table) {
+            tableDialog.updateTableNameInDialog();
+        }
+    }
+
+    @Override
+    public void updateTableNameInView() {
+        if (tableDialog != null) {
             tableDialog.updateTableNameInDialog();
         }
     }
@@ -197,13 +211,13 @@ public class DialogController implements IDialogController {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             ctrl.getRestaurant().resetTable(tableNumber);
             updateStatus(tableNumber);
-            updateTableName(tableNumber);
+            updateTableNameInView(tableNumber);
         }
     }
 
     private void updateStatus(final int tableNumber) {
         ctrl.autoSave();
-        this.commandOrdersViewUpdate(tableNumber);
+        this.updateOrdersInView(tableNumber);
     }
 
     private boolean verifyRemaining(final int tableNumber) {

@@ -20,12 +20,13 @@ public class UpdateBridge implements Filter {
         final IMainController mainController = MainController.getInstance();
         SwingUtilities.invokeLater(() -> {
             if (mainController.getDialogController() != null) {
-                mainController.getDialogController().commandOrdersViewUpdate(1);
-                mainController.getDialogController().updateTableName(1);
+                mainController.getDialogController().updateOrdersInView();
+                mainController.getDialogController().updateTableNameInView();
             }
             if (mainController.getMainViewController() != null) {
-                mainController.getMainViewController().updateUnprocessedOrders();
-                mainController.getMainViewController().updateTableNames();
+                mainController.getMainViewController().refreshTablesInView();
+                mainController.getMainViewController().updateUnprocessedOrdersInView();
+                mainController.getMainViewController().updateTableNamesInView();
             }
         });
     }

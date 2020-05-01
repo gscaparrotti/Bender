@@ -68,4 +68,11 @@ public interface IRestaurantView {
      */
     void updateTableNames();
 
+    /**
+     * Refresh the number of tables deleting the currently displayed amount and adding the new one
+     *
+     * @param amount
+     */
+    void refreshTables(int amount);
+
 }

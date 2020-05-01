@@ -254,12 +254,12 @@ public class NetworkController extends Thread {
                 @Override
                 public void run() {
                     if (mainController.getDialogController() != null) {
-                        mainController.getDialogController().commandOrdersViewUpdate(tableNumber);
-                        mainController.getDialogController().updateTableName(tableNumber);
+                        mainController.getDialogController().updateOrdersInView(tableNumber);
+                        mainController.getDialogController().updateTableNameInView(tableNumber);
                     }
                     if (mainController.getMainViewController() != null) {
-                        mainController.getMainViewController().updateUnprocessedOrders();
-                        mainController.getMainViewController().updateTableNames();
+                        mainController.getMainViewController().updateUnprocessedOrdersInView();
+                        mainController.getMainViewController().updateTableNamesInView();
                     }
                     mainController.autoSave();
                 }

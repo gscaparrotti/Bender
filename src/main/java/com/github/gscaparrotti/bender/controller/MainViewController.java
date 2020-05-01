@@ -39,24 +39,24 @@ public class MainViewController implements IMainViewController {
     }
 
     @Override
-    public int addTable() {
+    public int commandAddTable() {
         return mainController.getRestaurant().addTable();
     }
 
     @Override
-    public boolean removeTable() {
+    public boolean commandRemoveTable() {
         final int previousAmount = mainController.getRestaurant().getTablesAmount();
         final int newAmount = mainController.getRestaurant().removeTable();
         return newAmount == (previousAmount - 1);
     }
     
     @Override
-    public void updateTableNames() {
+    public void updateTableNamesInView() {
         view.updateTableNames();
     }
 
     @Override
-    public void updateUnprocessedOrders() {
+    public void updateUnprocessedOrdersInView() {
         final IRestaurant model = mainController.getRestaurant();
         final boolean filterEnabled = view.isFilterEnabled();
         view.clearUnprocessedOrders();
@@ -98,10 +98,15 @@ public class MainViewController implements IMainViewController {
     }
 
     @Override
+    public void refreshTablesInView() {
+        view.refreshTables(mainController.getRestaurant().getTablesAmount());
+    }
+
+    @Override
     public void commandUpdateUnprocessedOrder(final int table, final IDish dish) {
         try {
             mainController.getRestaurant().setOrderAsProcessed(table, dish);
-            updateUnprocessedOrders();
+            updateUnprocessedOrdersInView();
             mainController.autoSave();
         } catch (final Exception exc) {
             mainController.showMessageOnMainView(exc.getMessage());

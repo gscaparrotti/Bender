@@ -51,7 +51,12 @@ public interface IDialogController {
      *            is not present, the behaviour is undetermined (e.g. an
      *            exception may be thrown).
      */
-    void commandOrdersViewUpdate(int tableNumber);
+    void updateOrdersInView(int tableNumber);
+
+    /**
+     * Updates the orders of the currently displayed table
+     */
+    void updateOrdersInView();
 
     /**
      * @param tableNumber
@@ -89,20 +94,25 @@ public interface IDialogController {
      * @param table
      * @return the name associated to this table
      */
-    String getTableName(int table);
+    String commandGetTableName(int table);
 
     /**
      * @param table
      * @return The names of all the customers associated to this table
      */
-    SortedSet<String> getAllTableNames(int table);
+    SortedSet<String> commandGetAllTableNames(int table);
     
     /**
      * Updates the displayed name of the given table
      * 
      * @param table
      */
-    void updateTableName(int table);
+    void updateTableNameInView(int table);
+
+    /**
+     * Updates the displayed name of the current table
+     */
+    void updateTableNameInView();
 
     /**
      * @param tableNumber

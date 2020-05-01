@@ -85,7 +85,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         
         final JTextField tableNameTextField = new JTextField();
         allCustomersComboBox.removeAllItems();
-        this.ctrl.getAllTableNames(this.tableNumber).forEach(allCustomersComboBox::addItem);
+        this.ctrl.commandGetAllTableNames(this.tableNumber).forEach(allCustomersComboBox::addItem);
         allCustomersComboBox.addActionListener(e -> tableNameTextField.setText(allCustomersComboBox.getItemAt(allCustomersComboBox.getSelectedIndex())));
         final JLabel tableNameLabel = new JLabel("Nuovo cliente del tavolo: ");
         final JButton buttonTableName = new JButton("Aggiungi cliente");
@@ -205,7 +205,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         gbcScroll.gridx = 0;
         gbcScroll.gridy = 5;
         getContentPane().add(scroll, gbcScroll);
-        ctrl.commandOrdersViewUpdate(tableNumber);
+        ctrl.updateOrdersInView(tableNumber);
 
         final JPanel panel2 = new JPanel();
         final GridBagConstraints gbcPanel2 = new GridBagConstraints();
@@ -280,7 +280,7 @@ public class TableDialog extends JDialog implements ITableDialog {
         this.setTitle("Gestione del tavolo n° " + tableNumber + formattedName());
         lblGestioneDegliOrdini.setText("GESTIONE DEGLI ORDINI PER IL TAVOLO N° " + tableNumber + formattedName());
         allCustomersComboBox.removeAllItems();
-        this.ctrl.getAllTableNames(this.tableNumber).forEach(allCustomersComboBox::addItem);
+        this.ctrl.commandGetAllTableNames(this.tableNumber).forEach(allCustomersComboBox::addItem);
     }
 
     @Override
@@ -294,7 +294,7 @@ public class TableDialog extends JDialog implements ITableDialog {
     }
     
     private String formattedName() {
-        return !ctrl.getTableName(tableNumber).equals("") ? STRING_SEPARATOR + ctrl.getTableName(tableNumber) : "";
+        return !ctrl.commandGetTableName(tableNumber).equals("") ? STRING_SEPARATOR + ctrl.commandGetTableName(tableNumber) : "";
     }
 
     private void addRowToTableModel(final Object... obj) {

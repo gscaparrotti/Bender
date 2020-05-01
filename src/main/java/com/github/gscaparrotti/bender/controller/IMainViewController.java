@@ -23,23 +23,28 @@ public interface IMainViewController {
      * 
      *         Adds a new table to the model.
      */
-    int addTable();
+    int commandAddTable();
 
     /**
      * @return true if the removal succeded, false otherwise
      * 
      *         Removes the last added table from the model.
      */
-    boolean removeTable();
+    boolean commandRemoveTable();
 
     /**
      * Updateds the unprocessed orders on the application.view.
      */
-    void updateUnprocessedOrders();
-    
+    void updateUnprocessedOrdersInView();
+
+    /**
+     * Updates the amount of tables and their names in the view
+     */
+    void refreshTablesInView();
+
     /**
      * @param table the table the dish you want to set as processed belongs to
-     * @param dishName  the dish you want to set as processed
+     * @param dish  the dish you want to set as processed
      */
     void commandUpdateUnprocessedOrder(int table, IDish dish);
     
@@ -47,6 +52,6 @@ public interface IMainViewController {
      * Tells the application.view to update the name of each table. You should call this method when you change the name of one
      * or more tables. 
      */
-    void updateTableNames();
+    void updateTableNamesInView();
 
 }

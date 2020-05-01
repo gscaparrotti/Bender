@@ -160,13 +160,13 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         addTable.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent arg0) {
-                addTable(viewCtrl.addTable());
+                addTable(viewCtrl.commandAddTable());
             }
         });
         removeTable.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                if (viewCtrl.removeTable() && tablePanel.getComponentCount() > 0) {
+                if (viewCtrl.commandRemoveTable() && tablePanel.getComponentCount() > 0) {
                     tablePanel.remove(tablePanel.getComponentCount() - 1);
                     tablePanel.repaint();
                 }
@@ -187,14 +187,9 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     showApplicationMessage("Impossibile caricare i dati");
                 } else {
-                    tablePanel.removeAll();
-                    tablePanel.repaint();
-                    initLayout();
-                    for (int i = 1; i <= amount; i++) {
-                        addTable(i);
-                    }
+                    refreshTables(amount);
                 }
-                viewCtrl.updateUnprocessedOrders();
+                viewCtrl.updateUnprocessedOrdersInView();
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         });
@@ -202,7 +197,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
             @Override
             public void stateChanged(final ChangeEvent e) {
                 filter = filterOrders.isSelected();
-                viewCtrl.updateUnprocessedOrders();
+                viewCtrl.updateUnprocessedOrdersInView();
             }
         });
         exit.addActionListener(new ActionListener() {
@@ -236,8 +231,8 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                 final TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText().substring(0, newButton.getText().indexOf(" ") != -1 ? newButton.getText().indexOf(" ") : newButton.getText().length())));
                 ctrl.getDialogController().setView(tableDialog);
                 tableDialog.setVisible(true);
-                viewCtrl.updateUnprocessedOrders();
-                viewCtrl.updateTableNames();
+                viewCtrl.updateUnprocessedOrdersInView();
+                viewCtrl.updateTableNamesInView();
             }
         });
         if (columns == 0) {
@@ -299,6 +294,16 @@ public class RestaurantView extends JFrame implements IRestaurantView {
                     b.setText(tableNumber + name);
                 }
             }
+        }
+    }
+
+    @Override
+    public void refreshTables(final int amount) {
+        tablePanel.removeAll();
+        tablePanel.repaint();
+        initLayout();
+        for (int i = 1; i <= amount; i++) {
+            addTable(i);
         }
     }
     
