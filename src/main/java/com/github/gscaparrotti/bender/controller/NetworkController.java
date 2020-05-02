@@ -1,7 +1,8 @@
 package com.github.gscaparrotti.bender.controller;
 
-import com.github.gscaparrotti.bender.legacy.LegacyNetHelper;
 import com.github.gscaparrotti.bendermodel.model.IDish;
+import com.github.gscaparrotti.bendermodel.model.IMenu;
+import com.github.gscaparrotti.bendermodel.model.Menu;
 import com.github.gscaparrotti.bendermodel.model.Order;
 import com.github.gscaparrotti.bendermodel.model.OrderedDish;
 import com.github.gscaparrotti.bendermodel.model.Pair;
@@ -15,6 +16,7 @@ import java.net.SocketTimeoutException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.swing.*;
 
 /**
@@ -29,13 +31,6 @@ public class NetworkController extends Thread {
     private final int port;
     private boolean listen = true;
     private final IMainController mainController;
-
-    /**
-     * @return the current local IPv4 address of this machine.
-     */
-    public static String getCurrentIP() {
-        return LegacyNetHelper.getCurrentIP();
-    }
 
     /**
      * @param mainCtrl The main application.controller which will provide references to all the needed resources (eg:
@@ -87,21 +82,11 @@ public class NetworkController extends Thread {
     }
     
     private void showErrorMessage(final String error) {
-        SwingUtilities.invokeLater(new Runnable() {           
-            @Override
-            public void run() {
-                mainController.showIrreversibleErrorOnMainView(error);
-            }
-        });
+        SwingUtilities.invokeLater(() -> mainController.showIrreversibleErrorOnMainView(error));
     }
 
     private void showMessage(final String message) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mainController.showMessageOnMainView(message);
-            }
-        });
+        SwingUtilities.invokeLater(() -> mainController.showMessageOnMainView(message));
     }
 
     private class ClientInteractor extends Thread {
@@ -156,23 +141,40 @@ public class NetworkController extends Thread {
                 if (clientInput != null) {
                     if (clientInput instanceof String) {
                         final String stringInput = (String) clientInput;
+                        //In the following two cases a conversion is needed because CustomOrderedDish is not available inside Bender Mobile
                         if (stringInput.startsWith("GET TABLE")) {
                             final int tableNmbr = Integer.parseInt(stringInput.substring("GET TABLE".length() + 1));
-                            response = mainController.getRestaurant().getOrders(tableNmbr);
+                            response = mainController.getRestaurant().getOrders(tableNmbr).entrySet().stream().collect(Collectors.toMap(k -> {
+                                    if (k.getKey() instanceof OrderedDish) {
+                                        final OrderedDish dishInKey = (OrderedDish) k.getKey();
+                                        return new OrderedDish(dishInKey.getName(), dishInKey.getPrice(), dishInKey.getFilterValue(), dishInKey);
+                                    } else {
+                                        return k.getKey();
+                                    }
+                                }, Map.Entry::getValue
+                            ));
                         } else if (stringInput.equals("GET PENDING ORDERS")) {
                             final List<Order> pending = new LinkedList<>();
                             for (int i = 1; i <= mainController.getRestaurant().getTablesAmount(); i++) {
                                 for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : mainController.getRestaurant().getOrders(i).entrySet()) {
                                     if (entry.getValue().getX() > entry.getValue().getY()) {
-                                        pending.add(new Order(i, entry.getKey(), entry.getValue()));
+                                        if (entry.getKey() instanceof OrderedDish) {
+                                            final OrderedDish dishInKey = (OrderedDish) entry.getKey();
+                                            final OrderedDish toSendDish = new OrderedDish(dishInKey.getName(), dishInKey.getPrice(), dishInKey.getFilterValue(), dishInKey);
+                                            pending.add(new Order(i, toSendDish, entry.getValue()));
+                                        } else {
+                                            pending.add(new Order(i, entry.getKey(), entry.getValue()));
+                                        }
                                     }
                                 }
                             }
                             response = pending;
                         } else if (stringInput.equals("GET AMOUNT")) {
-                            response = Integer.valueOf(mainController.getRestaurant().getTablesAmount());
+                            response = mainController.getRestaurant().getTablesAmount();
                         } else if (stringInput.equals("GET MENU")) {
-                            response = mainController.getMenu();
+                            IMenu menu = new Menu();
+                            menu.addItems(mainController.getMenu().getDishesArray());
+                            response = menu;
                         } else if (stringInput.startsWith("RESET TABLE")) {
                             final int tableNmbr = Integer.parseInt(stringInput.substring("RESET TABLE".length() + 1));
                             mainController.getRestaurant().resetTable(tableNmbr);
@@ -200,7 +202,7 @@ public class NetworkController extends Thread {
                         Order orderInput = (Order) clientInput;
                         if (orderInput.getDish() instanceof OrderedDish) {
                             if (((OrderedDish) orderInput.getDish()).getTime().getTime() == 0L) {
-                                orderInput = new Order(orderInput.getTable(), new OrderedDish(((OrderedDish) orderInput.getDish())), orderInput.getAmounts());
+                                orderInput = new Order(orderInput.getTable(), new OrderedDish(orderInput.getDish()), orderInput.getAmounts());
                             }
                         }
                         if (orderInput.getAmounts().getY() == 0 && orderInput.getAmounts().getX() > 0) {
@@ -250,19 +252,17 @@ public class NetworkController extends Thread {
         }
         
         private void updateFinished(final int tableNumber) {
-            SwingUtilities.invokeLater(new Runnable() {            
-                @Override
-                public void run() {
-                    if (mainController.getDialogController() != null) {
-                        mainController.getDialogController().updateOrdersInView(tableNumber);
-                        mainController.getDialogController().updateTableNameInView(tableNumber);
-                    }
-                    if (mainController.getMainViewController() != null) {
-                        mainController.getMainViewController().updateUnprocessedOrdersInView();
-                        mainController.getMainViewController().updateTableNamesInView();
-                    }
-                    mainController.autoSave();
+            SwingUtilities.invokeLater(() -> {
+                if (mainController.getDialogController() != null) {
+                    mainController.getDialogController().updateOrdersInView(tableNumber);
+                    mainController.getDialogController().updateTableNameInView(tableNumber);
                 }
+                if (mainController.getMainViewController() != null) {
+                    mainController.getMainViewController().refreshTablesInView();
+                    mainController.getMainViewController().updateUnprocessedOrdersInView();
+                    mainController.getMainViewController().updateTableNamesInView();
+                }
+                mainController.autoSave();
             });
         }
     }

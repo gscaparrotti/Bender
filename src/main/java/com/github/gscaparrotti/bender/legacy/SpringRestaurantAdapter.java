@@ -121,7 +121,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
     @Override
     public void setTableName(int tableNumber, String name) {
         final Customer customer = new Customer();
-        customer.setName(name);
+        customer.setName(name != null ? name : DEFAULT_CUSTOMER_PREFIX + tableNumber);
         ifBodyNotNull(getController().getTable(tableNumber), table -> {
             customer.setTable(table);
             customer.setWorkingTable(table);
@@ -143,7 +143,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
         return ifBodyNotNull(getController().getTables(), tables -> {
             final Map<Integer, String> names = new HashMap<>();
             tables.forEach(table -> names.put((int) table.getTableNumber(),
-                    !table.getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber()) ? table.getCustomer().getName() : ""));
+                    !table.getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber()) ? table.getCustomer().getName() : null));
             return names;
         }, Collections::emptyMap);
     }
