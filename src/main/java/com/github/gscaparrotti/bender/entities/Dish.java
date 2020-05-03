@@ -17,6 +17,7 @@ public abstract class Dish {
     @Id
     private String name;
     private double price;
+    private boolean temporary = false;
     @JsonIgnore
     @OneToMany(mappedBy = "dish")
     private Set<Order> orders;
@@ -49,5 +50,13 @@ public abstract class Dish {
 
     public void setOrders(Set<Order> orders) {
         this.orders = orders;
+    }
+
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary(boolean temporary) {
+        this.temporary = temporary;
     }
 }

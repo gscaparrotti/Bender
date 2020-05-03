@@ -4,12 +4,14 @@ import com.github.gscaparrotti.bender.entities.Customer;
 import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.entities.Table;
 import com.github.gscaparrotti.bender.repositories.CustomerRepository;
+import com.github.gscaparrotti.bender.repositories.DishRepository;
 import com.github.gscaparrotti.bender.repositories.OrderRepository;
 import com.github.gscaparrotti.bender.repositories.TableRepository;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,14 +36,17 @@ public class RestaurantController {
     private CustomerRepository customerRepository;
     private OrderRepository orderRepository;
     private TableRepository tableRepository;
+    private DishRepository dishRepository;
     private PlatformTransactionManager transactionManager;
 
     @Autowired
     public RestaurantController(CustomerRepository customerRepository, OrderRepository orderRepository,
-                                TableRepository tableRepository, PlatformTransactionManager transactionManager) {
+                                TableRepository tableRepository, DishRepository dishRepository,
+                                PlatformTransactionManager transactionManager) {
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
         this.tableRepository = tableRepository;
+        this.dishRepository = dishRepository;
         this.transactionManager = transactionManager;
     }
 
@@ -49,7 +54,7 @@ public class RestaurantController {
     public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
         //the transaction is managed manually, so an exception can be caught by CustomExceptionHandler
         //(using @Transactional the exception is not thrown inside this object, but inside the proxy)
-        return new TransactionTemplate(transactionManager).execute(status -> {
+        return transactional(() -> {
             //an already existing customer cannot be assigned to another table
             if (customerRepository.findById(customer.getName()).isPresent()) {
                 if (customerRepository.findById(customer.getName()).get().getTable().getTableNumber() != customer.getTable().getTableNumber()) {
@@ -133,6 +138,10 @@ public class RestaurantController {
         if (!order.isServed() && order.getTime() == null) {
             order.setTime(new Date());
         }
+        if (!dishRepository.existsById(order.getDish().getName())) {
+            order.getDish().setTemporary(true);
+            order.setDish(dishRepository.save(order.getDish()));
+        }
         order = orderRepository.save(order);
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
@@ -146,6 +155,13 @@ public class RestaurantController {
             .or(Optional::empty);
         if (order.isPresent()) {
             orderRepository.delete(order.get());
+            if (orderRepository.findByDish_Name(dishName).isEmpty()) {
+                dishRepository.findById(dishName).ifPresent(dish -> {
+                    if (dish.isTemporary()) {
+                        dishRepository.deleteById(dishName);
+                    }
+                });
+            }
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -153,9 +169,9 @@ public class RestaurantController {
 
     @DeleteMapping("/orders/{id}")
     public ResponseEntity<Void> removeOrder(@PathVariable long id) {
-        if (orderRepository.findById(id).isPresent()) {
-            orderRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        final Optional<Order> order = orderRepository.findById(id).or(Optional::empty);
+        if (order.isPresent()) {
+            return removeOrder(order.get().getDish().getName(), order.get().getCustomer().getName());
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -165,6 +181,10 @@ public class RestaurantController {
         Set<Order> orders = new HashSet<>();
         (tableNumber == null ? orderRepository.findAll() : orderRepository.findByCustomer_workingTable_tableNumber(tableNumber)).forEach(orders::add);
         return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+
+    private <T> T transactional(final Supplier<T> supplier) {
+        return new TransactionTemplate(transactionManager).execute(status -> supplier.get());
     }
 
 }

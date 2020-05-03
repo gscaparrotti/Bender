@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping({"/api"})
 public class MenuController {
 
-    DishRepository dishRepository;
+    private DishRepository dishRepository;
 
     @Autowired
     public MenuController(DishRepository dishRepository) {

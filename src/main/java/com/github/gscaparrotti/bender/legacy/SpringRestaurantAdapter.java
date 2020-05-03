@@ -3,6 +3,7 @@ package com.github.gscaparrotti.bender.legacy;
 import com.github.gscaparrotti.bender.entities.Customer;
 import com.github.gscaparrotti.bender.entities.Dish;
 import com.github.gscaparrotti.bender.entities.Drink;
+import com.github.gscaparrotti.bender.entities.Food;
 import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.entities.Table;
 import com.github.gscaparrotti.bender.springControllers.MenuController;
@@ -51,15 +52,19 @@ public class SpringRestaurantAdapter implements IRestaurant {
         ifBodyNotNull(getController().getTable(table), foundTable -> {
             final Order order = new Order();
             order.setCustomer(foundTable.getCustomer());
-            ifBodyNotNull(ctrl(MenuController.class).getDish(item.getName()), dish -> {
-                order.setDish(dish);
-                order.setAmount(quantity);
-                if (item instanceof OrderedDish) {
-                    order.setTime(((OrderedDish) item).getTime());
-                }
-                getController().addOrder(order, false);
-                return null;
-            }, LegacyHelper.nullSupplier());
+            final Dish dish = ifBodyNotNull(ctrl(MenuController.class).getDish(item.getName()), d -> d, () -> {
+                final Dish temp = item.getFilterValue() == 0 ? new Drink() : new Food();
+                temp.setName(item.getName());
+                temp.setPrice(item.getPrice());
+                temp.setTemporary(true);
+                return temp;
+            });
+            order.setDish(dish);
+            order.setAmount(quantity);
+            if (item instanceof OrderedDish) {
+                order.setTime(((OrderedDish) item).getTime());
+            }
+            getController().addOrder(order, false);
             return null;
         }, LegacyHelper.nullSupplier());
     }

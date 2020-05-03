@@ -8,7 +8,8 @@ import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.IMenu;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ctrl;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ifBodyNotNull;
@@ -27,13 +28,11 @@ public class SpringMenuAdapter implements IMenu {
 
     @Override
     public IDish[] getDishesArray() {
-        return ifBodyNotNull(getController().getMenu(), newMenu -> {
-            final Iterator<Dish> newDishIterator = newMenu.iterator();
-            final IDish[] oldMenu = new IDish[newMenu.size()];
-            for (int i = 0; i < oldMenu.length && newDishIterator.hasNext(); i++) {
-                final Dish newDish = newDishIterator.next();
-                oldMenu[i] = new com.github.gscaparrotti.bendermodel.model.Dish(newDish.getName(), newDish.getPrice(), newDish instanceof Drink ? 0 : 1);
-            }
+        return ifBodyNotNull(getController().getMenu(), menu -> {
+            final Set<com.github.gscaparrotti.bendermodel.model.Dish> oldMenuSet = menu.stream()
+                .map(dish -> new com.github.gscaparrotti.bendermodel.model.Dish(dish.getName(), dish.getPrice(), dish instanceof Drink ? 0 : 1))
+                .collect(Collectors.toUnmodifiableSet());
+            final IDish[] oldMenu = oldMenuSet.toArray(new IDish[0]);
             Arrays.sort(oldMenu, Comparator.comparing(IDish::getName));
             return oldMenu;
         }, () -> new IDish[0]);
