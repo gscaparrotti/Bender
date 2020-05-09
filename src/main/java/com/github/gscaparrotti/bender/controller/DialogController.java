@@ -224,7 +224,7 @@ public class DialogController implements IDialogController {
         synchronized (ctrl.getRestaurant()) {
             boolean remaining = false;
             for (final Map.Entry<IDish, Pair<Integer, Integer>> entry : ctrl.getRestaurant().getOrders(tableNumber).entrySet()) {
-                if (entry.getValue().getX() != entry.getValue().getY()) {
+                if (!entry.getValue().getX().equals(entry.getValue().getY())) {
                     remaining = true;
                     break;
                 }
