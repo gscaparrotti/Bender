@@ -8,6 +8,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.swing.*;
 import org.springframework.stereotype.Component;
 
@@ -17,18 +18,25 @@ public class UpdateBridge implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         chain.doFilter(request, response);
-        final IMainController mainController = MainController.getInstance();
-        SwingUtilities.invokeLater(() -> {
-            if (mainController.getDialogController() != null) {
-                mainController.getDialogController().updateOrdersInView();
-                mainController.getDialogController().updateTableNameInView();
-            }
-            if (mainController.getMainViewController() != null) {
-                mainController.getMainViewController().refreshTablesInView();
-                mainController.getMainViewController().updateUnprocessedOrdersInView();
-                mainController.getMainViewController().updateTableNamesInView();
-            }
-        });
+        boolean update = true;
+        if (request instanceof HttpServletRequest) {
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            update = httpRequest.getMethod().equalsIgnoreCase("POST") || httpRequest.getMethod().equalsIgnoreCase("DELETE");
+        }
+        if (update) {
+            final IMainController mainController = MainController.getInstance();
+            SwingUtilities.invokeLater(() -> {
+                if (mainController.getDialogController() != null) {
+                    mainController.getDialogController().updateOrdersInView();
+                    mainController.getDialogController().updateTableNameInView();
+                }
+                if (mainController.getMainViewController() != null) {
+                    mainController.getMainViewController().refreshTablesInView();
+                    mainController.getMainViewController().updateUnprocessedOrdersInView();
+                    mainController.getMainViewController().updateTableNamesInView();
+                }
+            });
+        }
     }
 
 }
