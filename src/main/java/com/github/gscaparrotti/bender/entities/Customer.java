@@ -1,8 +1,6 @@
 package com.github.gscaparrotti.bender.entities;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -14,7 +12,6 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @javax.persistence.Table(uniqueConstraints = @UniqueConstraint(columnNames={"workingTable"}))
-@JsonIdentityInfo(generator = ObjectIdGenerators.StringIdGenerator.class)
 public class Customer {
 
     @Id

@@ -1,7 +1,6 @@
 package com.github.gscaparrotti.bender.entities;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -14,7 +13,6 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 @javax.persistence.Table(name = "order_t", uniqueConstraints = @UniqueConstraint(columnNames={"dish", "customer", "time"}))
-@JsonIdentityInfo(generator = ObjectIdGenerators.StringIdGenerator.class)
 public class Order {
 
     @Id
@@ -27,6 +25,7 @@ public class Order {
     @JoinColumn(name = "customer", nullable = false)
     private Customer customer;
     @Column(name = "time")
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     private Date time;
     private int amount;
     private boolean served;

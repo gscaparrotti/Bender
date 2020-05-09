@@ -1,9 +1,8 @@
 package com.github.gscaparrotti.bender.entities;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -11,7 +10,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 @Entity
-@JsonIdentityInfo(generator = ObjectIdGenerators.StringIdGenerator.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, property = "@type")
 public abstract class Dish {
 
     @Id
