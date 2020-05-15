@@ -7,16 +7,12 @@ import com.github.gscaparrotti.bender.legacy.LegacyNetHelper;
 import com.github.gscaparrotti.bender.springUtils.ApplicationContextProvider;
 import com.github.gscaparrotti.bender.viewdialogs.MainViewJTable;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Objects;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.springframework.context.ConfigurableApplicationContext;
 
 /**
@@ -157,55 +153,31 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         // aggiunta di mainPanel al JFrame
         this.add(mainPanel);
         // aggiunta degli actionListener ai pulsanti
-        addTable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent arg0) {
-                addTable(viewCtrl.commandAddTable());
+        addTable.addActionListener(arg0 -> addTable(viewCtrl.commandAddTable()));
+        removeTable.addActionListener(e -> {
+            if (viewCtrl.commandRemoveTable() && tablePanel.getComponentCount() > 0) {
+                tablePanel.remove(tablePanel.getComponentCount() - 1);
+                tablePanel.repaint();
             }
         });
-        removeTable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                if (viewCtrl.commandRemoveTable() && tablePanel.getComponentCount() > 0) {
-                    tablePanel.remove(tablePanel.getComponentCount() - 1);
-                    tablePanel.repaint();
-                }
-            }
-        });
-        save.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                ctrl.commandSave();
-            }
-        });
-        load.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                final int amount = ctrl.commandLoad();
-                if (amount == -1) {
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    showApplicationMessage("Impossibile caricare i dati");
-                } else {
-                    refreshTables(amount);
-                }
-                viewCtrl.updateUnprocessedOrdersInView();
+        save.addActionListener(e -> ctrl.commandSave());
+        load.addActionListener(e -> {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            final int amount = ctrl.commandLoad();
+            if (amount == -1) {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                showApplicationMessage("Impossibile caricare i dati");
+            } else {
+                refreshTables(amount);
             }
+            viewCtrl.updateUnprocessedOrdersInView();
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         });
-        filterOrders.addChangeListener(new ChangeListener() {          
-            @Override
-            public void stateChanged(final ChangeEvent e) {
-                filter = filterOrders.isSelected();
-                viewCtrl.updateUnprocessedOrdersInView();
-            }
+        filterOrders.addChangeListener(e -> {
+            filter = filterOrders.isSelected();
+            viewCtrl.updateUnprocessedOrdersInView();
         });
-        exit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                quitHandler();
-            }
-        });
+        exit.addActionListener(e -> quitHandler());
         // aggiunta di un windowListener alla finestra principale
         this.addWindowListener(new WindowAdapter() {
             public void windowClosing(final WindowEvent e) {
@@ -225,15 +197,12 @@ public class RestaurantView extends JFrame implements IRestaurantView {
         newButton.setPreferredSize(new Dimension(RestaurantView.SCREEN.width / 10, RestaurantView.SCREEN.height / 10));
         // CHECKSTYLE DISABLE MagicNumber FOR 1 LINES
         newButton.setBackground(new Color(255, 255, 70));
-        newButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                final TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText().substring(0, newButton.getText().indexOf(" ") != -1 ? newButton.getText().indexOf(" ") : newButton.getText().length())));
-                ctrl.getDialogController().setView(tableDialog);
-                tableDialog.setVisible(true);
-                viewCtrl.updateUnprocessedOrdersInView();
-                viewCtrl.updateTableNamesInView();
-            }
+        newButton.addActionListener(e -> {
+            final TableDialog tableDialog = new TableDialog(ctrl, Integer.parseInt(newButton.getText().substring(0, newButton.getText().contains(" ") ? newButton.getText().indexOf(" ") : newButton.getText().length())));
+            ctrl.getDialogController().setView(tableDialog);
+            tableDialog.setVisible(true);
+            viewCtrl.updateUnprocessedOrdersInView();
+            viewCtrl.updateTableNamesInView();
         });
         if (columns == 0) {
             columns = tablePanel.getWidth() / newButton.getPreferredSize().width;
@@ -275,7 +244,7 @@ public class RestaurantView extends JFrame implements IRestaurantView {
 
     @Override
     public void addUnprocessedOrder(final String name, final String table, final int quantity) {
-        toBeServed.addRow(new Object[] { name, table, quantity });
+        toBeServed.addRow(name, table, quantity);
     }
     
     public boolean isFilterEnabled() {

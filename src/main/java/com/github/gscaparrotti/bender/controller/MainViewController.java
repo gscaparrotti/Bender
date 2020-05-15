@@ -7,8 +7,6 @@ import com.github.gscaparrotti.bendermodel.model.Order;
 import com.github.gscaparrotti.bendermodel.model.OrderedDish;
 import com.github.gscaparrotti.bendermodel.model.Pair;
 import com.google.common.base.Strings;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
@@ -69,22 +67,19 @@ public class MainViewController implements IMainViewController {
                     }
                 }
             }
-            Collections.sort(pending, new Comparator<Order>() {
-                @Override
-                public int compare(final Order o1, final Order o2) {
-                    if (o1.getDish() instanceof OrderedDish && o2.getDish() instanceof OrderedDish) {
-                        return (((OrderedDish) o1.getDish()).getTime().compareTo(((OrderedDish) o2.getDish()).getTime()));
-                    } else if (o1.getDish() instanceof OrderedDish && !(o2.getDish() instanceof OrderedDish)) {
-                        return -1;
-                    } else if (o2.getDish() instanceof OrderedDish && !(o1.getDish() instanceof OrderedDish)){
-                        return 1;
-                    } else {
-                        return 0;
-                    }
+            pending.sort((o1, o2) -> {
+                if (o1.getDish() instanceof OrderedDish && o2.getDish() instanceof OrderedDish) {
+                    return (((OrderedDish) o1.getDish()).getTime().compareTo(((OrderedDish) o2.getDish()).getTime()));
+                } else if (o1.getDish() instanceof OrderedDish && !(o2.getDish() instanceof OrderedDish)) {
+                    return -1;
+                } else if (o2.getDish() instanceof OrderedDish && !(o1.getDish() instanceof OrderedDish)) {
+                    return 1;
+                } else {
+                    return 0;
                 }
             });
             for (final Order o : pending) {
-                final boolean ok = filterEnabled && o.getDish().getFilterValue() == 0 ? false : true;
+                final boolean ok = !(filterEnabled && o.getDish().getFilterValue() == 0);
                 if (ok && o.getAmounts().getY() < o.getAmounts().getX()) {
                     String tableName = Strings.nullToEmpty(mainController.getRestaurant().getTableName(o.getTable()));
                     if (tableName.length() > 0) {

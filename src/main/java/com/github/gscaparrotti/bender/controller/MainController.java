@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -93,7 +94,7 @@ public final class MainController implements IMainController {
             } else {
                 in = MainController.class.getResourceAsStream("/menu.txt");
             }
-            final BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF8"));
+            final BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             while (r.ready()) {
                 final String line = r.readLine();
                 if (line != null) {

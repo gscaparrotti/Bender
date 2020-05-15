@@ -14,11 +14,6 @@ public class DialogJTable extends AbstractBenderJTable {
     private static final long serialVersionUID = 8973323889463203812L;
     private final int tableNumber;
 
-    /**
-     * @param newProps 
-     * @param newMainCtrl 
-     * @param newTableNumber 
-     */
     public DialogJTable(final String[] newProps, final IMainController newMainCtrl, final int newTableNumber) {
         super(newProps, newMainCtrl);
         this.tableNumber = newTableNumber;
