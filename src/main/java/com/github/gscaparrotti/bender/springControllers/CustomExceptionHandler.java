@@ -4,7 +4,7 @@ import com.github.gscaparrotti.bender.controller.MainController;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ public class CustomExceptionHandler {
         } catch (final Throwable throwable) {
             final HttpHeaders header = new HttpHeaders();
             header.add("Java-Exception", throwable.toString());
-            if (throwable instanceof DataIntegrityViolationException) {
+            if (throwable instanceof DataAccessException) {
                 final StackTraceElement[] stackTrace = throwable.getStackTrace();
                 for (final StackTraceElement stackTraceElement : stackTrace) {
                     //verify if the exception has been thrown as a consequence of an interaction with the GUI
