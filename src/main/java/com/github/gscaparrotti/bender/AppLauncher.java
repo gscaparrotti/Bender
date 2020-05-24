@@ -51,6 +51,7 @@ public class AppLauncher {
                 ctrl.setMainViewAndControllers(v, new MainViewController(ctrl), new DialogController(ctrl));
                 setLookAndFeel();
                 v.buildView();
+                v.refreshTables(ctrl.commandLoad());
                 v.setVisible(true);
                 if (useOldNetworking) {
                     logger.info("Starting legacy network controller...");
