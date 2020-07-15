@@ -52,6 +52,7 @@ public class AppLauncher {
                 setLookAndFeel();
                 v.buildView();
                 v.refreshTables(ctrl.commandLoad());
+                ctrl.getMainViewController().updateUnprocessedOrdersInView();
                 v.setVisible(true);
                 if (useOldNetworking) {
                     logger.info("Starting legacy network controller...");

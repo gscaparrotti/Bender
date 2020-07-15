@@ -116,6 +116,14 @@ public class SpringRestaurantAdapter implements IRestaurant {
             }
             return null;
         }, LegacyHelper.nullSupplier());
+        ifBodyNotNull(getController().getCustomers(table), customers -> {
+            for (final Customer customer : customers) {
+                if (customer.getWorkingTable() == null) {
+                    getController().removeCustomer(customer.getName(), false);
+                }
+            }
+            return null;
+        }, LegacyHelper.nullSupplier());
     }
 
     @Override

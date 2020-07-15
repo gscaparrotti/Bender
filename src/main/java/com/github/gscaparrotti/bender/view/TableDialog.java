@@ -87,9 +87,9 @@ public class TableDialog extends JDialog implements ITableDialog {
         allCustomersComboBox.removeAllItems();
         this.ctrl.commandGetAllTableNames(this.tableNumber).forEach(allCustomersComboBox::addItem);
         allCustomersComboBox.addActionListener(e -> tableNameTextField.setText(allCustomersComboBox.getItemAt(allCustomersComboBox.getSelectedIndex())));
-        final JLabel tableNameLabel = new JLabel("Nuovo cliente del tavolo: ");
-        final JButton buttonTableName = new JButton("Aggiungi cliente");
-        final JButton buttonRemoveName = new JButton("Rimuovi cliente");
+        final JLabel tableNameLabel = new JLabel("Cliente: ");
+        final JButton buttonTableName = new JButton("Aggiorna");
+        final JButton buttonRemoveName = new JButton("Rimuovi");
         buttonTableName.addActionListener(e -> {
             final String newName = tableNameTextField.getText();
             ctrl.commandSetTableName(tableNumber, newName);

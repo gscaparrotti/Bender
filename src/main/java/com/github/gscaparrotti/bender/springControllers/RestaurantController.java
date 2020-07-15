@@ -69,6 +69,12 @@ public class RestaurantController {
                     customerRepository.saveAndFlush(c);
                 });
             }
+            final Date date = new Date();
+            customerRepository.findById(customer.getName()).ifPresent(reloadedCustomer -> reloadedCustomer.getOrders().forEach(order -> {
+                order.setTime(new Date(date.getTime()));
+                //two orders for the same customer and the same dish cannot have the same time
+                date.setTime(date.getTime() + 1);
+            }));
             return new ResponseEntity<>(customerRepository.save(customer), HttpStatus.CREATED);
         });
     }
