@@ -89,6 +89,11 @@ public interface IDialogController {
      * @param name the new name for the table or null if you want to remove the name
      */
     void commandSetTableName(int table, String name);
+
+    /**
+     * @param tableName the table
+     */
+    void commandRemoveTableName(String tableName);
     
     /**
      * @param table
@@ -151,8 +156,15 @@ public interface IDialogController {
     /**
      * @param tableNumber
      * 
-     *            This method erases all the orders of the selected table.
+     *            This method erases all the orders of the current customer of the selected table.
      */
     void commandReset(int tableNumber);
+
+    /**
+     * Erases all the orders for the selected table.
+     *
+     * @param tableNumber The table number
+     */
+    void commandHardReset(int tableNumber);
 
 }

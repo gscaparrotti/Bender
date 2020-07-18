@@ -2,8 +2,6 @@ package com.github.gscaparrotti.bender.view;
 
 import com.github.gscaparrotti.bender.controller.IDialogController;
 import com.github.gscaparrotti.bender.controller.IMainController;
-import com.github.gscaparrotti.bender.legacy.LegacyHelper;
-import com.github.gscaparrotti.bender.springControllers.RestaurantController;
 import com.github.gscaparrotti.bender.viewdialogs.DialogJTable;
 import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.OrderedDish;
@@ -12,7 +10,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
-import org.springframework.http.ResponseEntity;
 
 /**
  *
@@ -94,13 +91,7 @@ public class TableDialog extends JDialog implements ITableDialog {
             final String newName = tableNameTextField.getText();
             ctrl.commandSetTableName(tableNumber, newName);
         });
-        buttonRemoveName.addActionListener(e -> {
-            final ResponseEntity<Void> result = LegacyHelper.ctrl(RestaurantController.class).removeCustomer(tableNameTextField.getText(), false);
-            if (result.getStatusCode().isError()) {
-                mainCtrl.showMessageOnMainView("Errore nell'eliminazione del cliente. Controllare che non sia ancora il cliente attuale e riprovare.");
-            }
-            updateTableNameInDialog();
-        });
+        buttonRemoveName.addActionListener(e -> ctrl.commandRemoveTableName(tableNameTextField.getText()));
         final JPanel panelTableName = new JPanel();
         panelTableName.setLayout(new BoxLayout(panelTableName, BoxLayout.X_AXIS));
         panelTableName.add(tableNameLabel);
@@ -247,7 +238,11 @@ public class TableDialog extends JDialog implements ITableDialog {
         final JButton btnReset = new JButton("RESET");
         btnReset.addActionListener(arg0 -> resetHandler());
 
+        final JButton btnHardReset = new JButton("HARD RESET");
+        btnHardReset.addActionListener(arg0 -> hardResetHandler());
+
         panel.add(btnReset);
+        panel.add(btnHardReset);
         panel.add(btnAnnulla);
         this.setLocationByPlatform(true);
     }
@@ -310,6 +305,14 @@ public class TableDialog extends JDialog implements ITableDialog {
                 JOptionPane.YES_NO_OPTION);
         if (n == JOptionPane.YES_OPTION) {
             ctrl.commandReset(tableNumber);
+        }
+    }
+
+    private void hardResetHandler() {
+        final int n = JOptionPane.showConfirmDialog(this, "Vuoi davvero eseguire lo hard reset del tavolo?", "Hard Reset",
+            JOptionPane.YES_NO_OPTION);
+        if (n == JOptionPane.YES_OPTION) {
+            ctrl.commandHardReset(tableNumber);
         }
     }
 

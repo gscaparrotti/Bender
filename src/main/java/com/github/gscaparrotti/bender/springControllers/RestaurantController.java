@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping({"/api"})
 public class RestaurantController {
 
+    public static final String DEFAULT_CUSTOMER_PREFIX = "customer";
+
     private CustomerRepository customerRepository;
     private OrderRepository orderRepository;
     private TableRepository tableRepository;
@@ -118,10 +120,32 @@ public class RestaurantController {
     }
 
     @DeleteMapping("/tables/{id}")
-    public ResponseEntity<Void> removeTable(@PathVariable long id) {
+    public ResponseEntity<Void> removeTable(@PathVariable long id, @RequestParam(defaultValue = "false") boolean reset) {
         if (tableRepository.findById(id).isPresent()) {
-            tableRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.OK);
+            if (reset) {
+                return transactional(() -> {
+                    @SuppressWarnings("OptionalGetWithoutIsPresent") //the check is actually there
+                    Table table = tableRepository.findById(id).get();
+                    table.setCustomer(null);
+                    table = tableRepository.save(table);
+                    final Set<Customer> customers = customerRepository.findByTablec_TableNumber(id);
+                    customers.forEach(customer -> {
+                        orderRepository.deleteAll(customer.getOrders());
+                        customerRepository.save(customer);
+                    });
+                    customerRepository.deleteAll(customers);
+                    customerRepository.flush();
+                    final Customer defaultCustomer = new Customer();
+                    defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
+                    defaultCustomer.setTable(table);
+                    defaultCustomer.setWorkingTable(table);
+                    customerRepository.saveAndFlush(defaultCustomer);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                });
+            } else {
+                tableRepository.deleteById(id);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }

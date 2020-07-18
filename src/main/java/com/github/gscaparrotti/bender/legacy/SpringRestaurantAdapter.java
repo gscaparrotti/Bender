@@ -21,9 +21,9 @@ import java.util.Set;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ctrl;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ifBodyNotNull;
 
-public class SpringRestaurantAdapter implements IRestaurant {
+import static com.github.gscaparrotti.bender.springControllers.RestaurantController.DEFAULT_CUSTOMER_PREFIX;
 
-    private String DEFAULT_CUSTOMER_PREFIX = "customer";
+public class SpringRestaurantAdapter implements IRestaurant {
     
     @Override
     public int addTable() {
@@ -42,7 +42,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
         final int lastTableNumber = getTablesAmount();
         return ifBodyNotNull(getController().getCustomers(lastTableNumber), customers -> {
             customers.forEach(customer -> getController().removeCustomer(customer.getName(), true));
-            getController().removeTable(lastTableNumber);
+            getController().removeTable(lastTableNumber, false);
             return getTablesAmount();
         }, this::getTablesAmount);
     }
@@ -113,14 +113,6 @@ public class SpringRestaurantAdapter implements IRestaurant {
         ifBodyNotNull(getController().getOrders((long) table), orders -> {
             for (final Order order : orders) {
                 getController().removeOrder(order.getId());
-            }
-            return null;
-        }, LegacyHelper.nullSupplier());
-        ifBodyNotNull(getController().getCustomers(table), customers -> {
-            for (final Customer customer : customers) {
-                if (customer.getWorkingTable() == null) {
-                    getController().removeCustomer(customer.getName(), false);
-                }
             }
             return null;
         }, LegacyHelper.nullSupplier());

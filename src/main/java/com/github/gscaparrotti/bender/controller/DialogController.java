@@ -1,6 +1,7 @@
 package com.github.gscaparrotti.bender.controller;
 
 import com.github.gscaparrotti.bender.entities.Customer;
+import com.github.gscaparrotti.bender.legacy.LegacyHelper;
 import com.github.gscaparrotti.bender.springControllers.RestaurantController;
 import com.github.gscaparrotti.bender.view.ITableDialog;
 import com.github.gscaparrotti.bendermodel.model.IDish;
@@ -15,6 +16,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.swing.*;
+import org.springframework.http.ResponseEntity;
 
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ctrl;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ifBodyNotNull;
@@ -140,6 +142,15 @@ public class DialogController implements IDialogController {
     }
 
     @Override
+    public void commandRemoveTableName(String tableName) {
+        final ResponseEntity<Void> result = LegacyHelper.ctrl(RestaurantController.class).removeCustomer(tableName, false);
+        if (result.getStatusCode().isError()) {
+            ctrl.showMessageOnMainView("Errore nell'eliminazione del cliente. Controllare che non sia ancora il cliente attuale e riprovare.");
+        }
+        tableDialog.updateTableNameInDialog();
+    }
+
+    @Override
     public String commandGetTableName(final int table) {
         return ctrl.getRestaurant().getTableName(table);
     }
@@ -210,6 +221,15 @@ public class DialogController implements IDialogController {
     public void commandReset(final int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
             ctrl.getRestaurant().resetTable(tableNumber);
+            updateStatus(tableNumber);
+            updateTableNameInView(tableNumber);
+        }
+    }
+
+    @Override
+    public void commandHardReset(int tableNumber) {
+        if (tableDialog != null && tableDialog.getTable() == tableNumber) {
+            LegacyHelper.ctrl(RestaurantController.class).removeTable(tableNumber, true);
             updateStatus(tableNumber);
             updateTableNameInView(tableNumber);
         }
