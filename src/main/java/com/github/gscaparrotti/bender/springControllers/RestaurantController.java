@@ -11,13 +11,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.StreamSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,54 +29,49 @@ import org.springframework.web.bind.annotation.RestController;
 @CrossOrigin
 @RestController
 @RequestMapping({"/api"})
+@Transactional
 public class RestaurantController {
 
     public static final String DEFAULT_CUSTOMER_PREFIX = "customer";
 
-    private CustomerRepository customerRepository;
-    private OrderRepository orderRepository;
-    private TableRepository tableRepository;
-    private DishRepository dishRepository;
-    private PlatformTransactionManager transactionManager;
+    private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
+    private final TableRepository tableRepository;
+    private final DishRepository dishRepository;
 
     @Autowired
     public RestaurantController(CustomerRepository customerRepository, OrderRepository orderRepository,
-                                TableRepository tableRepository, DishRepository dishRepository,
-                                PlatformTransactionManager transactionManager) {
+                                TableRepository tableRepository, DishRepository dishRepository) {
         this.customerRepository = customerRepository;
         this.orderRepository = orderRepository;
         this.tableRepository = tableRepository;
         this.dishRepository = dishRepository;
-        this.transactionManager = transactionManager;
     }
 
     @PostMapping("/customers")
     public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
-        //the transaction is managed manually, so an exception can be caught by CustomExceptionHandler
-        //(using @Transactional the exception is not thrown inside this object, but inside the proxy)
-        return transactional(() -> {
-            //an already existing customer cannot be assigned to another table
-            if (customerRepository.findById(customer.getName()).isPresent()) {
-                if (customerRepository.findById(customer.getName()).get().getTable().getTableNumber() != customer.getTable().getTableNumber()) {
-                    return new ResponseEntity<>(HttpStatus.CONFLICT);
-                }
+        //an already existing customer cannot be assigned to another table
+        final Optional<Customer> repoCustomer = customerRepository.findById(customer.getName());
+        if (repoCustomer.isPresent()) {
+            if (repoCustomer.get().getTable().getTableNumber() != customer.getTable().getTableNumber()) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
-            //if we're changing the customer of a certain table we must remove the previous customer from the table
-            if (customer.getWorkingTable() != null) {
-                customerRepository.findByWorkingTable_TableNumber(customer.getTable().getTableNumber()).forEach(c -> {
-                    c.setWorkingTable(null);
-                    //flush is needed in order to be certain to execute this save before the next one in the transaction (it's not needed if we're not in a transaction)
-                    customerRepository.saveAndFlush(c);
-                });
-            }
-            final Date date = new Date();
-            customerRepository.findById(customer.getName()).ifPresent(reloadedCustomer -> reloadedCustomer.getOrders().forEach(order -> {
-                order.setTime(new Date(date.getTime()));
-                //two orders for the same customer and the same dish cannot have the same time
-                date.setTime(date.getTime() + 1);
-            }));
-            return new ResponseEntity<>(customerRepository.save(customer), HttpStatus.CREATED);
-        });
+        }
+        //if we're changing the customer of a certain table we must remove the previous customer from the table
+        if (customer.getWorkingTable() != null) {
+            customerRepository.findByWorkingTable_TableNumber(customer.getTable().getTableNumber()).forEach(c -> {
+                c.setWorkingTable(null);
+                //flush is needed in order to be certain to execute this save before the next one in the transaction (it's not needed if we're not in a transaction)
+                customerRepository.saveAndFlush(c);
+            });
+        }
+        final Date date = new Date();
+        customerRepository.findById(customer.getName()).ifPresent(reloadedCustomer -> reloadedCustomer.getOrders().forEach(order -> {
+            order.setTime(new Date(date.getTime()));
+            //two orders for the same customer and the same dish cannot have the same time
+            date.setTime(date.getTime() + 1);
+        }));
+        return new ResponseEntity<>(customerRepository.save(customer), HttpStatus.CREATED);
     }
 
     @GetMapping("/customers/{id}")
@@ -123,29 +116,25 @@ public class RestaurantController {
     public ResponseEntity<Void> removeTable(@PathVariable long id, @RequestParam(defaultValue = "false") boolean reset) {
         if (tableRepository.findById(id).isPresent()) {
             if (reset) {
-                return transactional(() -> {
-                    @SuppressWarnings("OptionalGetWithoutIsPresent") //the check is actually there
-                    Table table = tableRepository.findById(id).get();
-                    table.setCustomer(null);
-                    table = tableRepository.save(table);
-                    final Set<Customer> customers = customerRepository.findByTablec_TableNumber(id);
-                    customers.forEach(customer -> {
-                        orderRepository.deleteAll(customer.getOrders());
-                        customerRepository.save(customer);
-                    });
-                    customerRepository.deleteAll(customers);
-                    customerRepository.flush();
-                    final Customer defaultCustomer = new Customer();
-                    defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
-                    defaultCustomer.setTable(table);
-                    defaultCustomer.setWorkingTable(table);
-                    customerRepository.saveAndFlush(defaultCustomer);
-                    return new ResponseEntity<>(HttpStatus.OK);
+                Table table = tableRepository.findById(id).get();
+                table.setCustomer(null);
+                table = tableRepository.save(table);
+                final Set<Customer> customers = customerRepository.findByTablec_TableNumber(id);
+                customers.forEach(customer -> {
+                    orderRepository.deleteAll(customer.getOrders());
+                    customerRepository.save(customer);
                 });
+                customerRepository.deleteAll(customers);
+                customerRepository.flush();
+                final Customer defaultCustomer = new Customer();
+                defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
+                defaultCustomer.setTable(table);
+                defaultCustomer.setWorkingTable(table);
+                customerRepository.saveAndFlush(defaultCustomer);
             } else {
                 tableRepository.deleteById(id);
-                return new ResponseEntity<>(HttpStatus.OK);
             }
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
@@ -212,9 +201,4 @@ public class RestaurantController {
         (tableNumber == null ? orderRepository.findAll() : orderRepository.findByCustomer_workingTable_tableNumber(tableNumber)).forEach(orders::add);
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
-
-    private <T> T transactional(final Supplier<T> supplier) {
-        return new TransactionTemplate(transactionManager).execute(status -> supplier.get());
-    }
-
 }
