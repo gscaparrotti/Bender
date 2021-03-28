@@ -6,8 +6,8 @@ import com.github.gscaparrotti.bender.entities.Drink;
 import com.github.gscaparrotti.bender.entities.Food;
 import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.entities.Table;
-import com.github.gscaparrotti.bender.springControllers.MenuController;
-import com.github.gscaparrotti.bender.springControllers.RestaurantController;
+import com.github.gscaparrotti.bender.services.MenuService;
+import com.github.gscaparrotti.bender.services.RestaurantService;
 import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.IRestaurant;
 import com.github.gscaparrotti.bendermodel.model.OrderedDish;
@@ -20,8 +20,7 @@ import java.util.Set;
 
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ctrl;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ifBodyNotNull;
-
-import static com.github.gscaparrotti.bender.springControllers.RestaurantController.DEFAULT_CUSTOMER_PREFIX;
+import static com.github.gscaparrotti.bender.services.RestaurantService.DEFAULT_CUSTOMER_PREFIX;
 
 public class SpringRestaurantAdapter implements IRestaurant {
     
@@ -52,7 +51,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
         ifBodyNotNull(getController().getTable(table), foundTable -> {
             final Order order = new Order();
             order.setCustomer(foundTable.getCustomer());
-            final Dish dish = ifBodyNotNull(ctrl(MenuController.class).getDish(item.getName()), d -> d, () -> {
+            final Dish dish = ifBodyNotNull(ctrl(MenuService.class).getDish(item.getName()), d -> d, () -> {
                 final Dish temp = item.getFilterValue() == 0 ? new Drink() : new Food();
                 temp.setName(item.getName());
                 temp.setPrice(item.getPrice());
@@ -153,8 +152,8 @@ public class SpringRestaurantAdapter implements IRestaurant {
         }, Collections::emptyMap);
     }
 
-    private static RestaurantController getController() {
-        return ctrl(RestaurantController.class);
+    private static RestaurantService getController() {
+        return ctrl(RestaurantService.class);
     }
 
     private static class CustomOrderedDish extends OrderedDish {

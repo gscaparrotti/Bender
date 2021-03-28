@@ -1,9 +1,9 @@
 package com.github.gscaparrotti.bender.legacy;
 
+import com.github.gscaparrotti.bender.services.Result;
 import com.github.gscaparrotti.bender.springUtils.ApplicationContextProvider;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.springframework.http.ResponseEntity;
 
 public class LegacyHelper {
 
@@ -11,9 +11,9 @@ public class LegacyHelper {
         return ApplicationContextProvider.getApplicationContext().getBean(clazz);
     }
 
-    public static <X, Y> Y ifBodyNotNull(final ResponseEntity<X> responseEntity, final Function<X, Y> ifBodyNotNull, final Supplier<Y> orElse) {
-        if (responseEntity.hasBody()) {
-            return ifBodyNotNull.apply(responseEntity.getBody());
+    public static <X, Y> Y ifBodyNotNull(final Result<X> result, final Function<X, Y> ifBodyNotNull, final Supplier<Y> orElse) {
+        if (result.hasValue()) {
+            return ifBodyNotNull.apply(result.getValue());
         }
         return orElse.get();
     }

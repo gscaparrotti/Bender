@@ -2,7 +2,8 @@ package com.github.gscaparrotti.bender.controller;
 
 import com.github.gscaparrotti.bender.entities.Customer;
 import com.github.gscaparrotti.bender.legacy.LegacyHelper;
-import com.github.gscaparrotti.bender.springControllers.RestaurantController;
+import com.github.gscaparrotti.bender.services.RestaurantService;
+import com.github.gscaparrotti.bender.services.Result;
 import com.github.gscaparrotti.bender.view.ITableDialog;
 import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.IMenu;
@@ -16,7 +17,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.swing.*;
-import org.springframework.http.ResponseEntity;
 
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ctrl;
 import static com.github.gscaparrotti.bender.legacy.LegacyHelper.ifBodyNotNull;
@@ -143,8 +143,8 @@ public class DialogController implements IDialogController {
 
     @Override
     public void commandRemoveTableName(String tableName) {
-        final ResponseEntity<Void> result = LegacyHelper.ctrl(RestaurantController.class).removeCustomer(tableName, false);
-        if (result.getStatusCode().isError()) {
+        final Result<Void> result = LegacyHelper.ctrl(RestaurantService.class).removeCustomer(tableName, false);
+        if (result.getResultType().isError()) {
             ctrl.showMessageOnMainView("Errore nell'eliminazione del cliente. Controllare che non sia ancora il cliente attuale e riprovare.");
         }
         tableDialog.updateTableNameInDialog();
@@ -157,7 +157,7 @@ public class DialogController implements IDialogController {
 
     @Override
     public SortedSet<String> commandGetAllTableNames(final int table) {
-        return ifBodyNotNull(ctrl(RestaurantController.class).getCustomers(table), customers -> customers.stream().map(Customer::getName).collect(Collectors.toCollection(TreeSet::new)), TreeSet::new);
+        return ifBodyNotNull(ctrl(RestaurantService.class).getCustomers(table), customers -> customers.stream().map(Customer::getName).collect(Collectors.toCollection(TreeSet::new)), TreeSet::new);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class DialogController implements IDialogController {
     @Override
     public void commandHardReset(int tableNumber) {
         if (tableDialog != null && tableDialog.getTable() == tableNumber) {
-            LegacyHelper.ctrl(RestaurantController.class).removeTable(tableNumber, true);
+            LegacyHelper.ctrl(RestaurantService.class).removeTable(tableNumber, true);
             updateStatus(tableNumber);
             updateTableNameInView(tableNumber);
         }

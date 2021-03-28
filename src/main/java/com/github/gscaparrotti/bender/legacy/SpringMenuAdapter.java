@@ -3,7 +3,7 @@ package com.github.gscaparrotti.bender.legacy;
 import com.github.gscaparrotti.bender.entities.Dish;
 import com.github.gscaparrotti.bender.entities.Drink;
 import com.github.gscaparrotti.bender.entities.Food;
-import com.github.gscaparrotti.bender.springControllers.MenuController;
+import com.github.gscaparrotti.bender.services.MenuService;
 import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.IMenu;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class SpringMenuAdapter implements IMenu {
         }, () -> new IDish[0]);
     }
 
-    private static MenuController getController() {
-        return ctrl(MenuController.class);
+    private static MenuService getController() {
+        return ctrl(MenuService.class);
     }
 }

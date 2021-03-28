@@ -1,4 +1,4 @@
-package com.github.gscaparrotti.bender.springControllers;
+package com.github.gscaparrotti.bender.services;
 
 import com.github.gscaparrotti.bender.controller.MainController;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -8,9 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -22,23 +19,21 @@ public class CustomExceptionHandler {
     private static final StackWalker stackWalker = StackWalker.getInstance();
 
     @SuppressWarnings("rawtypes")
-    @Around(value = "execution(* com.github.gscaparrotti.bender.springControllers..*(..))")
+    @Around(value = "execution(* com.github.gscaparrotti.bender.services..*(..))")
     public Object handleExceptionInSpringController(final ProceedingJoinPoint pjp) {
         try {
             return pjp.proceed();
         } catch (final Throwable throwable) {
-            final HttpHeaders header = new HttpHeaders();
-            header.add("Java-Exception", throwable.toString());
             if (throwable instanceof DataAccessException) {
                 LOGGER.warn(throwable.toString());
                 if (stackWalker.walk(stackFrames -> stackFrames.anyMatch(f -> f.getClassName().contains("bender.legacy")))) {
                     final String newThrowableString = throwable.toString().replaceAll("(.{100})", "$1\u2193\n");
                     MainController.getInstance().showMessageOnMainView("Errore nell'elaborazione dei dati: \n" + newThrowableString);
                 }
-                return new ResponseEntity(header, HttpStatus.CONFLICT);
+                return new Result(Result.ResultType.CONFLICT);
             } else {
                 LOGGER.error(throwable.toString());
-                return new ResponseEntity(header, HttpStatus.INTERNAL_SERVER_ERROR);
+                return new Result(Result.ResultType.ERROR);
             }
         }
     }
