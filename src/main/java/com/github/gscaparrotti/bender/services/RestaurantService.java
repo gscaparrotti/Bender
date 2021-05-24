@@ -38,22 +38,24 @@ public class RestaurantService {
     
     public Result<Customer> addCustomer(final Customer customer) {
         //an already existing customer cannot be assigned to another table
-        final Optional<Customer> repoCustomer = customerRepository.findById(customer.getName());
-        if (repoCustomer.isPresent()) {
-            if (repoCustomer.get().getTable().getTableNumber() != customer.getTable().getTableNumber()) {
+        final Optional<Customer> customerFromRepositoryOpt = this.customerRepository.findById(customer.getName());
+        if (customerFromRepositoryOpt.isPresent()) {
+            final Customer customerFromRepository = customerFromRepositoryOpt.get();
+            if (customerFromRepository.getTable().getTableNumber() != customer.getTable().getTableNumber()) {
                 return new Result<>(Result.ResultType.CONFLICT);
             }
         }
         //if we're changing the customer of a certain table we must remove the previous customer from the table
         if (customer.getWorkingTable() != null) {
-            customerRepository.findByWorkingTable_TableNumber(customer.getTable().getTableNumber()).forEach(c -> {
+            this.customerRepository.findAllByWorkingTableTableNumber(customer.getTable().getTableNumber()).forEach(c -> {
                 c.setWorkingTable(null);
-                //flush is needed in order to be certain to execute this save before the next one in the transaction (it's not needed if we're not in a transaction)
+                //flush is needed in order to be certain to execute this save before the next one in the transaction (it's not needed if we're not in a transaction).
+                //this is useful if further data is loaded from the modified repository
                 customerRepository.saveAndFlush(c);
             });
         }
         final Date date = new Date();
-        customerRepository.findById(customer.getName()).ifPresent(reloadedCustomer -> reloadedCustomer.getOrders().forEach(order -> {
+        customerRepository.findById(customer.getName()).ifPresent(c -> c.getOrders().forEach(order -> {
             order.setTime(new Date(date.getTime()));
             //two orders for the same customer and the same dish cannot have the same time
             date.setTime(date.getTime() + 1);
@@ -68,7 +70,7 @@ public class RestaurantService {
     public Result<Set<Customer>> getCustomers(final long tableNumber) {
         final Set<Customer> customers = new HashSet<>();
         if (tableNumber > 0) {
-            customers.addAll(customerRepository.findByTablec_TableNumber(tableNumber));
+            customers.addAll(customerRepository.findAllByTablecTableNumber(tableNumber));
         } else {
             customers.addAll(customerRepository.findAll());
         }
@@ -76,10 +78,12 @@ public class RestaurantService {
     }
     
     public Result<Void> removeCustomer(final String id, final boolean force) {
-        if (customerRepository.findById(id).isPresent()) {
+        final Optional<Customer> customerOpt = this.customerRepository.findById(id);
+        if (customerOpt.isPresent()) {
+            final Customer customer = customerOpt.get();
             //a customer should be deleted only if it's not currently associated to a table, or if the user wants to force the operation
-            if (customerRepository.findById(id).get().getWorkingTable() == null || force) {
-                customerRepository.deleteById(id);
+            if (customer.getWorkingTable() == null || force) {
+                customerRepository.delete(customer);
                 return new Result<>(Result.ResultType.OK);
             } else {
                 return new Result<>(Result.ResultType.CONFLICT);
@@ -101,7 +105,7 @@ public class RestaurantService {
                 Table table = tableRepository.findById(id).get();
                 table.setCustomer(null);
                 table = tableRepository.save(table);
-                final Set<Customer> customers = customerRepository.findByTablec_TableNumber(id);
+                final Set<Customer> customers = customerRepository.findAllByTablecTableNumber(id);
                 customers.forEach(customer -> {
                     orderRepository.deleteAll(customer.getOrders());
                     customerRepository.save(customer);
@@ -153,7 +157,7 @@ public class RestaurantService {
             .min((o1, o2) -> Boolean.compare(o1.isServed(), o2.isServed()));
         if (order.isPresent()) {
             orderRepository.delete(order.get());
-            if (orderRepository.findByDish_Name(dishName).isEmpty()) {
+            if (orderRepository.findAllByDishName(dishName).isEmpty()) {
                 dishRepository.findById(dishName).ifPresent(dish -> {
                     if (dish.isTemporary()) {
                         dishRepository.deleteById(dishName);
@@ -175,7 +179,7 @@ public class RestaurantService {
     
     public Result<Set<Order>> getOrders(final Long tableNumber) {
         Set<Order> orders = new HashSet<>();
-        (tableNumber == null ? orderRepository.findAll() : orderRepository.findByCustomer_workingTable_tableNumber(tableNumber)).forEach(orders::add);
+        (tableNumber == null ? orderRepository.findAll() : orderRepository.findAllByCustomerWorkingTableTableNumber(tableNumber)).forEach(orders::add);
         return new Result<>(orders, Result.ResultType.OK);
     }
     
