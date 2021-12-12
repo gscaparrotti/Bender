@@ -1,8 +1,10 @@
 package com.github.gscaparrotti.bender.services;
 
 import com.github.gscaparrotti.bender.entities.Customer;
+import com.github.gscaparrotti.bender.entities.CustomerTable;
 import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.entities.Table;
+import com.github.gscaparrotti.bender.entities.WorkingTable;
 import com.github.gscaparrotti.bender.repositories.CustomerRepository;
 import com.github.gscaparrotti.bender.repositories.DishRepository;
 import com.github.gscaparrotti.bender.repositories.OrderRepository;
@@ -41,13 +43,13 @@ public class RestaurantService {
         final Optional<Customer> customerFromRepositoryOpt = this.customerRepository.findById(customer.getName());
         if (customerFromRepositoryOpt.isPresent()) {
             final Customer customerFromRepository = customerFromRepositoryOpt.get();
-            if (customerFromRepository.getTable().getTableNumber() != customer.getTable().getTableNumber()) {
+            if (customerFromRepository.getCustomerTable().getTable().getTableNumber() != customer.getCustomerTable().getTable().getTableNumber()) {
                 return new Result<>(Result.ResultType.CONFLICT);
             }
         }
         //if we're changing the customer of a certain table we must remove the previous customer from the table
         if (customer.getWorkingTable() != null) {
-            this.customerRepository.findAllByWorkingTableTableNumber(customer.getTable().getTableNumber()).forEach(c -> {
+            this.customerRepository.findAllByWorkingTableNumber(customer.getWorkingTable().getTable().getTableNumber()).forEach(c -> {
                 c.setWorkingTable(null);
                 //flush is needed in order to be certain to execute this save before the next one in the transaction (it's not needed if we're not in a transaction).
                 //this is useful if further data is loaded from the modified repository
@@ -70,7 +72,7 @@ public class RestaurantService {
     public Result<Set<Customer>> getCustomers(final long tableNumber) {
         final Set<Customer> customers = new HashSet<>();
         if (tableNumber > 0) {
-            customers.addAll(customerRepository.findAllByTablecTableNumber(tableNumber));
+            customers.addAll(customerRepository.findAllByTableNumber(tableNumber));
         } else {
             customers.addAll(customerRepository.findAll());
         }
@@ -103,9 +105,9 @@ public class RestaurantService {
         if (tableRepository.findById(id).isPresent()) {
             if (reset) {
                 Table table = tableRepository.findById(id).get();
-                table.setCustomer(null);
+                table.setCustomerTable(null);
                 table = tableRepository.save(table);
-                final Set<Customer> customers = customerRepository.findAllByTablecTableNumber(id);
+                final Set<Customer> customers = customerRepository.findAllByTableNumber(id);
                 customers.forEach(customer -> {
                     orderRepository.deleteAll(customer.getOrders());
                     customerRepository.save(customer);
@@ -114,8 +116,8 @@ public class RestaurantService {
                 customerRepository.flush();
                 final Customer defaultCustomer = new Customer();
                 defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
-                defaultCustomer.setTable(table);
-                defaultCustomer.setWorkingTable(table);
+                defaultCustomer.setCustomerTable(new CustomerTable(table, defaultCustomer));
+                defaultCustomer.setWorkingTable(new WorkingTable(table, defaultCustomer));
                 customerRepository.saveAndFlush(defaultCustomer);
             } else {
                 tableRepository.deleteById(id);
@@ -179,7 +181,7 @@ public class RestaurantService {
     
     public Result<Set<Order>> getOrders(final Long tableNumber) {
         Set<Order> orders = new HashSet<>();
-        (tableNumber == null ? orderRepository.findAll() : orderRepository.findAllByCustomerWorkingTableTableNumber(tableNumber)).forEach(orders::add);
+        (tableNumber == null ? orderRepository.findAll() : orderRepository.findAllByTableNumber(tableNumber)).forEach(orders::add);
         return new Result<>(orders, Result.ResultType.OK);
     }
     

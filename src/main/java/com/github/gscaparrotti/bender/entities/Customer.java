@@ -4,24 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.UniqueConstraint;
 
 @Entity
-@javax.persistence.Table(uniqueConstraints = @UniqueConstraint(columnNames={"workingTable"}))
 public class Customer {
 
     @Id
     private String name;
     @OneToOne
-    @JoinColumn(name = "workingTable")
-    private Table workingTable;
-    @ManyToOne
-    @JoinColumn(name = "tablec", nullable = false)
-    private Table tablec;
+    private WorkingTable workingTable;
+    @OneToOne
+    private CustomerTable customerTable;
     @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private Set<Order> orders;
@@ -34,11 +28,11 @@ public class Customer {
         this.name = name;
     }
 
-    public Table getWorkingTable() {
+    public WorkingTable getWorkingTable() {
         return workingTable;
     }
 
-    public void setWorkingTable(Table workingTable) {
+    public void setWorkingTable(WorkingTable workingTable) {
         this.workingTable = workingTable;
     }
 
@@ -50,11 +44,11 @@ public class Customer {
         this.orders = orders;
     }
 
-    public Table getTable() {
-        return tablec;
+    public CustomerTable getCustomerTable() {
+        return customerTable;
     }
 
-    public void setTable(Table table) {
-        this.tablec = table;
+    public void setCustomerTable(CustomerTable customerTable) {
+        this.customerTable = customerTable;
     }
 }

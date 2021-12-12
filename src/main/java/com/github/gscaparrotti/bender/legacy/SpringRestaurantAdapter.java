@@ -1,11 +1,13 @@
 package com.github.gscaparrotti.bender.legacy;
 
 import com.github.gscaparrotti.bender.entities.Customer;
+import com.github.gscaparrotti.bender.entities.CustomerTable;
 import com.github.gscaparrotti.bender.entities.Dish;
 import com.github.gscaparrotti.bender.entities.Drink;
 import com.github.gscaparrotti.bender.entities.Food;
 import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.entities.Table;
+import com.github.gscaparrotti.bender.entities.WorkingTable;
 import com.github.gscaparrotti.bender.services.MenuService;
 import com.github.gscaparrotti.bender.services.RestaurantService;
 import com.github.gscaparrotti.bendermodel.model.IDish;
@@ -29,8 +31,8 @@ public class SpringRestaurantAdapter implements IRestaurant {
         return ifBodyNotNull(getController().addTable(new Table()), table -> {
             final Customer defaultCustomer = new Customer();
             defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
-            defaultCustomer.setTable(table);
-            defaultCustomer.setWorkingTable(table);
+            defaultCustomer.setCustomerTable(new CustomerTable(table, defaultCustomer));
+            defaultCustomer.setWorkingTable(new WorkingTable(table, defaultCustomer));
             getController().addCustomer(defaultCustomer);
             return (int) table.getTableNumber();
         }, () -> -1);
@@ -50,7 +52,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
     public void addOrder(int table, IDish item, int quantity) {
         ifBodyNotNull(getController().getTable(table), foundTable -> {
             final Order order = new Order();
-            order.setCustomer(foundTable.getCustomer());
+            order.setCustomer(foundTable.getCustomerTable().getCustomer());
             final Dish dish = ifBodyNotNull(ctrl(MenuService.class).getDish(item.getName()), d -> d, () -> {
                 final Dish temp = item.getFilterValue() == 0 ? new Drink() : new Food();
                 temp.setName(item.getName());
@@ -71,7 +73,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
     @Override
     public void removeOrder(int table, IDish item, int quantity) {
         ifBodyNotNull(getController().getTable(table), foundTable -> {
-            getController().removeOrder(item.getName(), foundTable.getCustomer().getName());
+            getController().removeOrder(item.getName(), foundTable.getCustomerTable().getCustomer().getName());
             return null;
         }, LegacyHelper.nullSupplier());
     }
@@ -127,8 +129,8 @@ public class SpringRestaurantAdapter implements IRestaurant {
         final Customer customer = new Customer();
         customer.setName(name != null ? name : DEFAULT_CUSTOMER_PREFIX + tableNumber);
         ifBodyNotNull(getController().getTable(tableNumber), table -> {
-            customer.setTable(table);
-            customer.setWorkingTable(table);
+            customer.setCustomerTable(new CustomerTable(table, customer));
+            customer.setWorkingTable(new WorkingTable(table, customer));
             getController().addCustomer(customer);
             return null;
         }, LegacyHelper.nullSupplier());
@@ -137,8 +139,13 @@ public class SpringRestaurantAdapter implements IRestaurant {
 
     @Override
     public String getTableName(int tableNumber) {
-        return ifBodyNotNull(getController().getTable(tableNumber), table ->
-                table.getCustomer() != null && !table.getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber()) ? table.getCustomer().getName() : "", () -> "");
+        return ifBodyNotNull(
+            getController().getTable(tableNumber),
+            table -> table.getCustomerTable() != null && !table.getCustomerTable().getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber())
+                ? table.getCustomerTable().getCustomer().getName()
+                : "",
+            () -> ""
+        );
     }
 
     @Deprecated
@@ -147,7 +154,7 @@ public class SpringRestaurantAdapter implements IRestaurant {
         return ifBodyNotNull(getController().getTables(), tables -> {
             final Map<Integer, String> names = new HashMap<>();
             tables.forEach(table -> names.put((int) table.getTableNumber(),
-                    !table.getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber()) ? table.getCustomer().getName() : null));
+                    !table.getCustomerTable().getCustomer().getName().equals(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber()) ? table.getCustomerTable().getCustomer().getName() : null));
             return names;
         }, Collections::emptyMap);
     }

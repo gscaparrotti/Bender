@@ -1,10 +1,8 @@
 package com.github.gscaparrotti.bender.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 @Entity
@@ -14,11 +12,11 @@ public class Table {
     @Id
     private long tableNumber;
     @JsonIgnore
-    @OneToOne(mappedBy = "workingTable")
-    private Customer customer;
+    @OneToOne
+    private CustomerTable customerTable;
     @JsonIgnore
-    @OneToMany(mappedBy = "tablec")
-    private Set<Customer> allCustomers;
+    @OneToOne
+    private WorkingTable workingTable;
 
     public long getTableNumber() {
         return tableNumber;
@@ -28,19 +26,19 @@ public class Table {
         this.tableNumber = tableNumber;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public CustomerTable getCustomerTable() {
+        return customerTable;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setCustomerTable(CustomerTable customer) {
+        this.customerTable = customer;
     }
 
-    public Set<Customer> getAllCustomers() {
-        return allCustomers;
+    public WorkingTable getWorkingTable() {
+        return workingTable;
     }
 
-    public void setAllCustomers(Set<Customer> allCustomers) {
-        this.allCustomers = allCustomers;
+    public void setWorkingTable(WorkingTable workingTable) {
+        this.workingTable = workingTable;
     }
 }

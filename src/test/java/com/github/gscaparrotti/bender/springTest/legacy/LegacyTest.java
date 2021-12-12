@@ -1,6 +1,5 @@
 package com.github.gscaparrotti.bender.springTest.legacy;
 
-import com.github.gscaparrotti.bender.entities.Order;
 import com.github.gscaparrotti.bender.legacy.LegacyHelper;
 import com.github.gscaparrotti.bender.legacy.SpringMenuAdapter;
 import com.github.gscaparrotti.bender.legacy.SpringRestaurantAdapter;
@@ -10,17 +9,13 @@ import com.github.gscaparrotti.bendermodel.model.IDish;
 import com.github.gscaparrotti.bendermodel.model.Pair;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -48,7 +43,7 @@ public class LegacyTest {
         //its name returned by SpringRestaurantAdapter should be an empty string...
         assertEquals("", ctrl.getTableName(1));
         //...while its "real" name should be 'customer1'
-        assertEquals("customer1", Objects.requireNonNull(springCtrl.getTable(1).getBody()).getCustomer().getName());
+        assertEquals("customer1", Objects.requireNonNull(springCtrl.getTable(1).getBody()).getCustomerTable().getCustomer().getName());
         //the customer should be the active one for table 1 (workingTable should not be null)
         assertNotNull(Objects.requireNonNull(springCtrl.getCustomer("customer1").getBody()).getWorkingTable());
         final String name = "newName";

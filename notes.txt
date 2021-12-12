@@ -1,0 +1,41 @@
+    @PostMapping("/tables")
+    public ResponseEntity<Table> addTable(@RequestParam Table table) {
+        if (table.getTableNumber() == 0) {
+            table.setTableNumber(tableRepository.count() + 1);
+        }
+//        if (table.getCustomer() == null) {
+//            final Customer defaultCustomer = new Customer();
+//            defaultCustomer.setName(DEFAULT_CUSTOMER_PREFIX + table.getTableNumber());
+//            defaultCustomer.setTable(table);
+//            table.setCustomer(customerRepository.save(defaultCustomer));
+//            table = tableRepository.save(table);
+//        }
+        return new ResponseEntity<>(tableRepository.save(table), HttpStatus.CREATED);
+    }
+
+        @DeleteMapping("/tables/{id}")
+        public ResponseEntity<Table> removeTable(@PathVariable long id) {
+            if (tableRepository.findById(id).isPresent()) {
+                //customerRepository.findByTablec(tableRepository.findById(id).get()).forEach(customer -> customerRepository.delete(customer));
+                tableRepository.deleteById(id);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+            @GetMapping("/tables/{id}")
+            public ResponseEntity<Table> getTable(@PathVariable long id, @RequestParam(defaultValue = "false") boolean withAllCustomers) {
+                return tableRepository.findById(id).map(table -> {
+                    if (withAllCustomers) {
+                        // @Transactional must be enabled for this to work
+                        // this is needed to load the customers set, which is lazily loaded from the DB, in the table object
+                        // we're not using open-session-in-view, so it is needed for network requests, too
+                        Hibernate.initialize(table.getAllCustomers());
+                        JsonResult.instance().use(JsonView.with(table)
+                            // all the excludes (or includes) for a certain class should be passed at once (otherwise only the last one is applied)
+                            .onClass(Customer.class, Match.match().exclude("workingTable", "table", "orders"))
+                            .onClass(Table.class, Match.match().include("allCustomers")));
+                    }
+                    return new ResponseEntity<>(table, HttpStatus.OK);
+                }).orElseGet(() -> new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+            }
